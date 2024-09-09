@@ -192,7 +192,7 @@ export const ProductManagement: React.FC = () => {
   
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', 'ml_default'); // Asegúrate de reemplazarlo con tu preset
+    formData.append('upload_preset', 'doctorcel'); // Asegúrate de reemplazarlo con tu preset
   
     try {
       const response = await fetch('https://api.cloudinary.com/v1_1/drwqsyyv5/image/upload', {
