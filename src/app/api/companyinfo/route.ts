@@ -1,66 +1,56 @@
-import { NextApiRequest, NextApiResponse } from 'next'
+import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { method } = req
+export async function GET() {
+  try {
+    const companyInfo = await prisma.companyInfo.findMany()
+    return NextResponse.json(companyInfo)
+  } catch (error) {
+    return NextResponse.json({ error: 'Error fetching company info' }, { status: 500 })
+  }
+}
 
-  switch (method) {
-    case 'GET':
-      try {
-        const companyInfo = await prisma.companyInfo.findMany()
-        res.status(200).json(companyInfo)
-      } catch (error) {
-        res.status(500).json({ error: 'Error fetching company info' })
+export async function POST(request: NextRequest) {
+  try {
+    const { name, address, phone, email, taxId } = await request.json()
+    const newCompanyInfo = await prisma.companyInfo.create({
+      data: { 
+        name,
+        address,
+        phone,
+        email,
+        taxId
       }
-      break
+    })
+    return NextResponse.json(newCompanyInfo, { status: 201 })
+  } catch (error) {
+    return NextResponse.json({ error: 'Error creating company info' }, { status: 500 })
+  }
+}
 
-    case 'POST':
-      try {
-        const { name, address, phone, email, taxId } = req.body
-        const newCompanyInfo = await prisma.companyInfo.create({
-          data: { 
-            name,
-            address,
-            phone,
-            email,
-            taxId
-          }
-        })
-        res.status(201).json(newCompanyInfo)
-      } catch (error) {
-        res.status(500).json({ error: 'Error creating company info' })
-      }
-      break
+export async function PATCH(request: NextRequest) {
+  try {
+    const { id, ...updateData } = await request.json()
+    const updatedCompanyInfo = await prisma.companyInfo.update({
+      where: { id: Number(id) },
+      data: updateData,
+    })
+    return NextResponse.json(updatedCompanyInfo)
+  } catch (error) {
+    return NextResponse.json({ error: 'Error updating company info' }, { status: 500 })
+  }
+}
 
-    case 'PATCH':
-      try {
-        const { id, ...updateData } = req.body
-        const updatedCompanyInfo = await prisma.companyInfo.update({
-          where: { id: Number(id) },
-          data: updateData,
-        })
-        res.status(200).json(updatedCompanyInfo)
-      } catch (error) {
-        res.status(500).json({ error: 'Error updating company info' })
-      }
-      break
-
-    case 'DELETE':
-      try {
-        const { id } = req.body
-        await prisma.companyInfo.delete({
-          where: { id: Number(id) },
-        })
-        res.status(200).json({ message: 'Company info deleted successfully' })
-      } catch (error) {
-        res.status(500).json({ error: 'Error deleting company info' })
-      }
-      break
-
-    default:
-      res.setHeader('Allow', ['GET', 'POST', 'PATCH', 'DELETE'])
-      res.status(405).end(`Method ${method} Not Allowed`)
+export async function DELETE(request: NextRequest) {
+  try {
+    const { id } = await request.json()
+    await prisma.companyInfo.delete({
+      where: { id: Number(id) },
+    })
+    return NextResponse.json({ message: 'Company info deleted successfully' })
+  } catch (error) {
+    return NextResponse.json({ error: 'Error deleting company info' }, { status: 500 })
   }
 }
