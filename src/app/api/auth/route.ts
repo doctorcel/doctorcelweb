@@ -9,25 +9,30 @@ try {
   prisma = new PrismaClient()
 } catch (error) {
   console.error('Failed to create Prisma Client:', error)
-  process.exit(1)
 }
 
 const SECRET_KEY = process.env.JWT_SECRET
 
 export async function POST(request: Request) {
   console.log('Auth endpoint reached');
+  console.log('Environment variables:', {
+    DATABASE_URL: process.env.DATABASE_URL ? 'Set' : 'Not set',
+    JWT_SECRET: process.env.JWT_SECRET ? 'Set' : 'Not set',
+  });
+
   try {
     if (!SECRET_KEY) {
       console.error('JWT_SECRET is not defined');
-      throw new Error('Server configuration error');
+      return NextResponse.json({ message: 'Server configuration error' }, { status: 500 });
+    }
+
+    if (!prisma) {
+      console.error('Database connection not established');
+      return NextResponse.json({ message: 'Database connection error' }, { status: 500 });
     }
 
     const { email, password } = await request.json()
     console.log('Login attempt for email:', email);
-
-    if (!prisma) {
-      throw new Error('Database connection not established');
-    }
 
     const user = await prisma.user.findUnique({ where: { email } });
     console.log('User found:', user ? 'Yes' : 'No');

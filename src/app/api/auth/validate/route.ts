@@ -2,41 +2,34 @@ import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import jwt from 'jsonwebtoken'
 
-/**
- * @swagger
- * /api/auth/validate:
- *   get:
- *     summary: Validate a user's token
- *     tags: [Authentication]
- *     security:
- *       - BearerAuth: []
- *     responses:
- *       200:
- *         description: Token is valid
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: number
- *                 name:
- *                   type: string
- *                 email:
- *                   type: string
- *                 role:
- *                   type: string
- *       401:
- *         description: Invalid or missing token
- *       404:
- *         description: User not found
- */
+let prisma: PrismaClient
 
-const prisma = new PrismaClient()
-const SECRET_KEY = process.env.JWT_SECRET || 'your-secret-key'
+try {
+  prisma = new PrismaClient()
+} catch (error) {
+  console.error('Failed to create Prisma Client:', error)
+}
+
+const SECRET_KEY = process.env.JWT_SECRET
 
 export async function GET(request: Request) {
+  console.log('Validate endpoint reached');
+  console.log('Environment variables:', {
+    DATABASE_URL: process.env.DATABASE_URL ? 'Set' : 'Not set',
+    JWT_SECRET: process.env.JWT_SECRET ? 'Set' : 'Not set',
+  });
+
   try {
+    if (!SECRET_KEY) {
+      console.error('JWT_SECRET is not defined');
+      return NextResponse.json({ message: 'Server configuration error' }, { status: 500 });
+    }
+
+    if (!prisma) {
+      console.error('Database connection not established');
+      return NextResponse.json({ message: 'Database connection error' }, { status: 500 });
+    }
+
     const authHeader = request.headers.get('Authorization')
     if (!authHeader) {
       console.log('No Authorization header provided')
