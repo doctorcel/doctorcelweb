@@ -1,1 +1,10 @@
-{}
+{
+  "app\\api-doc\\page.tsx -> swagger-ui-react": {
+    "id": 3844,
+    "files": [
+      "static/chunks/949fd6f9.ea15f268e68fa400.js",
+      "static/chunks/673e98bc.796808e71d82bd79.js",
+      "static/chunks/510.db4129c8353e1714.js"
+    ]
+  }
+}
