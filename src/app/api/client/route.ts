@@ -1,66 +1,56 @@
-import { NextApiRequest, NextApiResponse } from 'next'
+import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { method } = req
+export async function GET() {
+  try {
+    const clients = await prisma.client.findMany()
+    return NextResponse.json(clients)
+  } catch (error) {
+    return NextResponse.json({ error: 'Error fetching clients' }, { status: 500 })
+  }
+}
 
-  switch (method) {
-    case 'GET':
-      try {
-        const clients = await prisma.client.findMany()
-        res.status(200).json(clients)
-      } catch (error) {
-        res.status(500).json({ error: 'Error fetching clients' })
+export async function POST(request: NextRequest) {
+  try {
+    const { name, email, phone, address, taxId } = await request.json()
+    const newClient = await prisma.client.create({
+      data: { 
+        name,
+        email,
+        phone,
+        address,
+        taxId
       }
-      break
+    })
+    return NextResponse.json(newClient, { status: 201 })
+  } catch (error) {
+    return NextResponse.json({ error: 'Error creating client' }, { status: 500 })
+  }
+}
 
-    case 'POST':
-      try {
-        const { name, email, phone, address, taxId } = req.body
-        const newClient = await prisma.client.create({
-          data: { 
-            name,
-            email,
-            phone,
-            address,
-            taxId
-          }
-        })
-        res.status(201).json(newClient)
-      } catch (error) {
-        res.status(500).json({ error: 'Error creating client' })
-      }
-      break
+export async function PATCH(request: NextRequest) {
+  try {
+    const { id, ...updateData } = await request.json()
+    const updatedClient = await prisma.client.update({
+      where: { id: Number(id) },
+      data: updateData,
+    })
+    return NextResponse.json(updatedClient)
+  } catch (error) {
+    return NextResponse.json({ error: 'Error updating client' }, { status: 500 })
+  }
+}
 
-    case 'PATCH':
-      try {
-        const { id, ...updateData } = req.body
-        const updatedClient = await prisma.client.update({
-          where: { id: Number(id) },
-          data: updateData,
-        })
-        res.status(200).json(updatedClient)
-      } catch (error) {
-        res.status(500).json({ error: 'Error updating client' })
-      }
-      break
-
-    case 'DELETE':
-      try {
-        const { id } = req.body
-        await prisma.client.delete({
-          where: { id: Number(id) },
-        })
-        res.status(200).json({ message: 'Client deleted successfully' })
-      } catch (error) {
-        res.status(500).json({ error: 'Error deleting client' })
-      }
-      break
-
-    default:
-      res.setHeader('Allow', ['GET', 'POST', 'PATCH', 'DELETE'])
-      res.status(405).end(`Method ${method} Not Allowed`)
+export async function DELETE(request: NextRequest) {
+  try {
+    const { id } = await request.json()
+    await prisma.client.delete({
+      where: { id: Number(id) },
+    })
+    return NextResponse.json({ message: 'Client deleted successfully' })
+  } catch (error) {
+    return NextResponse.json({ error: 'Error deleting client' }, { status: 500 })
   }
 }
