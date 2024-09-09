@@ -97,9 +97,9 @@ export const ProductManagement: React.FC = () => {
 
   const handleArticleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setArticleFormData(prev => ({ 
-      ...prev, 
-      [name]: name.includes('price') ? parseFloat(value) || 0 : value 
+    setArticleFormData(prev => ({
+      ...prev,
+      [name]: name.includes('price') ? parseFloat(value) || 0 : value
     }));
   };
 
@@ -164,7 +164,7 @@ export const ProductManagement: React.FC = () => {
 
   const handleDeleteArticle = async (id: number) => {
     try {
-      const response = await fetch(`/api/articles?id=${id}`, { 
+      const response = await fetch(`/api/articles?id=${id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id })
@@ -189,20 +189,21 @@ export const ProductManagement: React.FC = () => {
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, fieldName: keyof Article) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
+  
     const formData = new FormData();
     formData.append('file', file);
-
+    formData.append('upload_preset', 'ml_default'); // Asegúrate de reemplazarlo con tu preset
+  
     try {
-      const response = await fetch('/api/upload', {
+      const response = await fetch('https://api.cloudinary.com/v1_1/drwqsyyv5/image/upload', {
         method: 'POST',
         body: formData,
       });
-
+  
       if (!response.ok) throw new Error('Failed to upload image');
-
+  
       const data = await response.json();
-      setArticleFormData(prev => ({ ...prev, [fieldName]: data.url }));
+      setArticleFormData(prev => ({ ...prev, [fieldName]: data.secure_url }));
     } catch (error) {
       console.error('Error uploading image:', error);
     }
@@ -213,7 +214,7 @@ export const ProductManagement: React.FC = () => {
       <h2>Gestión de Artículos y Categorías</h2>
       <Button onClick={() => { setCurrentArticle(null); setIsArticleModalOpen(true); }}>Añadir Artículo</Button>
       <Button onClick={() => { setCurrentCategory(null); setIsCategoryModalOpen(true); }}>Añadir Categoría</Button>
-      
+
       <h3>Artículos</h3>
       <table>
         <thead>
@@ -267,35 +268,35 @@ export const ProductManagement: React.FC = () => {
           <Input name="name" value={articleFormData.name} onChange={handleArticleInputChange} label="Nombre" required />
           <Input name="description" value={articleFormData.description} onChange={handleArticleInputChange} label="Descripción" required />
           <Input name="price" type="number" value={articleFormData.price} onChange={handleArticleInputChange} label="Precio" required step="0.01" />
-          <Select 
+          <Select
             name="categoryId"
             value={articleFormData.categoryId}
             onChange={handleArticleInputChange}
-            label="Categoría" 
-            options={categories.map(c => ({ value: c.id!, label: c.name }))} 
+            label="Categoría"
+            options={categories.map(c => ({ value: c.id!, label: c.name }))}
             required
           />
           <Input name="camera" value={articleFormData.camera || ''} onChange={handleArticleInputChange} label="Cámara" />
           <Input name="ram" value={articleFormData.ram || ''} onChange={handleArticleInputChange} label="RAM" />
           <Input name="storage" value={articleFormData.storage || ''} onChange={handleArticleInputChange} label="Almacenamiento" />
           <Input name="processor" value={articleFormData.processor || ''} onChange={handleArticleInputChange} label="Procesador" />
-          
+
           {['imageUrl1', 'imageUrl2', 'imageUrl3', 'imageUrl4'].map((field, index) => (
             <div key={field}>
-              <Input 
+              <Input
                 name={field}
                 value={articleFormData[field as keyof Article] || ''}
                 onChange={handleArticleInputChange}
-                label={`URL de imagen ${index + 1}`} 
+                label={`URL de imagen ${index + 1}`}
               />
-              <input 
-                type="file" 
-                accept="image/*" 
+              <input
+                type="file"
+                accept="image/*"
                 onChange={(e) => handleImageUpload(e, field as keyof Article)}
               />
             </div>
           ))}
-          
+
           <Input name="price4Months" type="number" value={articleFormData.price4Months || ''} onChange={handleArticleInputChange} label="Precio 4 meses" step="0.01" />
           <Input name="price8Months" type="number" value={articleFormData.price8Months || ''} onChange={handleArticleInputChange} label="Precio 8 meses" step="0.01" />
           <Input name="price12Months" type="number" value={articleFormData.price12Months || ''} onChange={handleArticleInputChange} label="Precio 12 meses" step="0.01" />

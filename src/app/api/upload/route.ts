@@ -1,42 +1,47 @@
+import { v2 as cloudinary } from 'cloudinary';
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
+import { Readable } from 'stream';
 
-export const dynamic = 'force-dynamic';
+// Configuración de Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(request: NextRequest) {
   const data = await request.formData();
-  const file: File | null = data.get('file') as unknown as File;
+  const file = data.get('file') as File | null;
 
   if (!file) {
-    return NextResponse.json({ success: false, error: 'No file uploaded' }, { status: 400 });
+    return NextResponse.json({ success: false, error: 'No se ha subido un archivo' }, { status: 400 });
   }
 
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
+  const buffer = Buffer.from(await file.arrayBuffer());
 
-  // Make sure this path is relative to the root of your project
-  const uploadDir = join(process.cwd(), 'public', 'uploads');
+  // Convertir el buffer en un Readable stream
+  const stream = new Readable();
+  stream.push(buffer);
+  stream.push(null);
 
   try {
-    // Try to create the directory if it doesn't exist
-    await mkdir(uploadDir, { recursive: true });
+    // Subir la imagen a Cloudinary usando un Readable stream
+    const uploadResult = await new Promise<any>((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        { folder: 'uploads' }, // Opcional: carpeta donde guardar los archivos
+        (error, result) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        }
+      ).end(buffer);
+    });
+
+    return NextResponse.json({ success: true, url: uploadResult.secure_url });
   } catch (error) {
-    console.error('Failed to create upload directory:', error);
-    return NextResponse.json({ success: false, error: 'Failed to create upload directory' }, { status: 500 });
+    console.error('Error al subir imagen a Cloudinary:', error);
+    return NextResponse.json({ success: false, error: 'Error al subir archivo' }, { status: 500 });
   }
-
-  const fileName = `${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
-  const filePath = join(uploadDir, fileName);
-
-  try {
-    await writeFile(filePath, buffer);
-    console.log(`File saved to ${filePath}`);
-  } catch (error) {
-    console.error('Failed to save file:', error);
-    return NextResponse.json({ success: false, error: 'Failed to save file' }, { status: 500 });
-  }
-
-  const fileUrl = `/uploads/${fileName}`;
-  return NextResponse.json({ success: true, url: fileUrl });
 }
