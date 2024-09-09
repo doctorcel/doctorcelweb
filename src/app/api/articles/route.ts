@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
         description: body.description,
         price: body.price,
         categoryId: body.categoryId,
-        camera: body.camera,
+        camera: body.camara,
         ram: body.ram,
         storage: body.storage,
         processor: body.processor,
