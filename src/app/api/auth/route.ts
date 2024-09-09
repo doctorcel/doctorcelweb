@@ -3,78 +3,43 @@ import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 
-/**
- * @swagger
- * /api/auth/:
- *   post:
- *     summary: Authenticate a user
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 format: email
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: Login successful
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 token:
- *                   type: string
- *                 user:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: number
- *                     name:
- *                       type: string
- *                     email:
- *                       type: string
- *                     role:
- *                       type: string
- *       401:
- *         description: Invalid credentials
- */
+let prisma: PrismaClient
 
-const prisma = new PrismaClient()
-const SECRET_KEY = process.env.JWT_SECRET || 'your-secret-key'
+try {
+  prisma = new PrismaClient()
+} catch (error) {
+  console.error('Failed to create Prisma Client:', error)
+  process.exit(1)
+}
+
+const SECRET_KEY = process.env.JWT_SECRET
 
 export async function POST(request: Request) {
+  console.log('Auth endpoint reached');
   try {
-    console.log('Auth endpoint reached');
-    const { email, password } = await request.json()
-    console.log('Login attempt for email:', email)
+    if (!SECRET_KEY) {
+      console.error('JWT_SECRET is not defined');
+      throw new Error('Server configuration error');
+    }
 
-    const user = await prisma.user.findUnique({
-      where: { email },
-    })
+    const { email, password } = await request.json()
+    console.log('Login attempt for email:', email);
+
+    if (!prisma) {
+      throw new Error('Database connection not established');
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    console.log('User found:', user ? 'Yes' : 'No');
 
     if (!user) {
-      console.log('User not found for email:', email)
       return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 })
     }
 
-    console.log('User found:', user.email)
-
-    console.log('Comparing passwords')
     const isPasswordValid = await bcrypt.compare(password, user.password)
-    console.log('Password valid:', isPasswordValid)
+    console.log('Password valid:', isPasswordValid);
 
     if (!isPasswordValid) {
-      console.log('Invalid password for user:', email)
       return NextResponse.json({ message: 'Invalid credentials' }, { status: 401 })
     }
 
@@ -84,7 +49,7 @@ export async function POST(request: Request) {
       { expiresIn: '1h' }
     )
 
-    console.log('Login successful for user:', email)
+    console.log('Login successful for user:', email);
 
     return NextResponse.json({
       token,
@@ -96,12 +61,10 @@ export async function POST(request: Request) {
       },
     })
   } catch (error) {
-    console.error('Login error:', error)
+    console.error('Login error:', error);
     if (error instanceof Error) {
-      return NextResponse.json({ message: `Internal server error: ${error.message}` }, { status: 500 })
+      return NextResponse.json({ message: `Server error: ${error.message}` }, { status: 500 })
     }
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
-  } finally {
-    await prisma.$disconnect()
+    return NextResponse.json({ message: 'Unknown server error' }, { status: 500 })
   }
 }
