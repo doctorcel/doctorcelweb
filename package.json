@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "vercel-build": "prisma generate && prisma migrate deploy && next build"
+    "vercel-build": "prisma generate && next build"
   },
   "dependencies": {
     "@prisma/client": "^5.19.1",
@@ -19,7 +19,8 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "sass": "^1.78.0",
-    "swagger-ui-react": "^5.17.14"
+    "swagger-ui-react": "^5.17.14",
+    "vercel": "^37.4.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
