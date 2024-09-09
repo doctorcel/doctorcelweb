@@ -1,1 +1,1 @@
-{"version":1,"functions":{"/api/auth/validate":{},"/api/upload":{}}}
+{"version":1,"functions":{"/api/auth/validate":{},"/api/auth":{},"/api/upload":{}}}
