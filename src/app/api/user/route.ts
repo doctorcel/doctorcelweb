@@ -13,27 +13,21 @@ async function applyMiddleware(request: NextRequest) {
   return null;
 }
 
-export async function GET(request: NextRequest) {
-  const middlewareResponse = await applyMiddleware(request);
-  if (middlewareResponse) return middlewareResponse;
-
-  try {
-    const users = await prisma.user.findMany({
-      select: { id: true, name: true, email: true, role: true }
-    });
-    return NextResponse.json(users);
-  } catch (error) {
-    return NextResponse.json({ error: 'Error fetching users' }, { status: 500 });
-  }
-}
-
 export async function POST(request: NextRequest) {
+  console.log('User registration endpoint reached');
+
   const middlewareResponse = await applyMiddleware(request);
-  if (middlewareResponse) return middlewareResponse;
+  if (middlewareResponse) {
+    console.log('Middleware check failed:', middlewareResponse.status);
+    return middlewareResponse;
+  }
 
   try {
     const { name, email, password, role } = await request.json();
+    console.log('Attempting to create user:', { name, email, role });
+
     const hashedPassword = await bcrypt.hash(password, 10);
+    
     const newUser = await prisma.user.create({
       data: { 
         name,
@@ -43,43 +37,20 @@ export async function POST(request: NextRequest) {
       },
       select: { id: true, name: true, email: true, role: true }
     });
+
+    console.log('User created successfully:', newUser.email);
     return NextResponse.json(newUser, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Error creating user' }, { status: 500 });
-  }
-}
-
-export async function PATCH(request: NextRequest) {
-  const middlewareResponse = await applyMiddleware(request);
-  if (middlewareResponse) return middlewareResponse;
-
-  try {
-    const { id, ...updateData } = await request.json();
-    if (updateData.password) {
-      updateData.password = await bcrypt.hash(updateData.password, 10);
+    console.error('Error creating user:', error);
+    if (error instanceof Error) {
+      // Check for unique constraint violation
+      if (error.message.includes('Unique constraint failed on the fields: (`email`)')) {
+        return NextResponse.json({ error: 'Email already in use' }, { status: 400 });
+      }
+      return NextResponse.json({ error: `Error creating user: ${error.message}` }, { status: 500 });
     }
-    const updatedUser = await prisma.user.update({
-      where: { id: Number(id) },
-      data: updateData,
-      select: { id: true, name: true, email: true, role: true }
-    });
-    return NextResponse.json(updatedUser);
-  } catch (error) {
-    return NextResponse.json({ error: 'Error updating user' }, { status: 500 });
-  }
-}
-
-export async function DELETE(request: NextRequest) {
-  const middlewareResponse = await applyMiddleware(request);
-  if (middlewareResponse) return middlewareResponse;
-
-  try {
-    const { id } = await request.json();
-    await prisma.user.delete({
-      where: { id: Number(id) }
-    });
-    return NextResponse.json({ message: 'User deleted successfully' });
-  } catch (error) {
-    return NextResponse.json({ error: 'Error deleting user' }, { status: 500 });
+    return NextResponse.json({ error: 'Unknown error creating user' }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
   }
 }
