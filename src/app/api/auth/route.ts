@@ -1,19 +1,15 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 
-let prisma: PrismaClient
+export const dynamic = 'force-dynamic'
 
-try {
-  prisma = new PrismaClient()
-} catch (error) {
-  console.error('Failed to create Prisma Client:', error)
-}
+const prisma = new PrismaClient()
 
 const SECRET_KEY = process.env.JWT_SECRET
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   console.log('Auth endpoint reached');
   console.log('Environment variables:', {
     DATABASE_URL: process.env.DATABASE_URL ? 'Set' : 'Not set',
@@ -24,11 +20,6 @@ export async function POST(request: Request) {
     if (!SECRET_KEY) {
       console.error('JWT_SECRET is not defined');
       return NextResponse.json({ message: 'Server configuration error' }, { status: 500 });
-    }
-
-    if (!prisma) {
-      console.error('Database connection not established');
-      return NextResponse.json({ message: 'Database connection error' }, { status: 500 });
     }
 
     const { email, password } = await request.json()
@@ -71,5 +62,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: `Server error: ${error.message}` }, { status: 500 })
     }
     return NextResponse.json({ message: 'Unknown server error' }, { status: 500 })
+  } finally {
+    await prisma.$disconnect()
   }
 }
