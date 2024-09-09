@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,13 +8,27 @@ datasource db {
 }
 
 model Article {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String
-  price       Float
-  category    Category @relation(fields: [categoryId], references: [id])
-  categoryId  Int
-  // Añade más campos según sea necesario
+  id            Int           @id @default(autoincrement())
+  name          String
+  description   String
+  price         Float
+  categoryId    Int
+  category      Category      @relation(fields: [categoryId], references: [id])
+  camera        String?
+  ram           String?
+  storage       String?
+  processor     String?
+  imageUrl1     String?
+  imageUrl2     String?
+  imageUrl3     String?
+  imageUrl4     String?
+  price4Months  Float?
+  price8Months  Float?
+  price12Months Float?
+  price16Months Float?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  InvoiceItem   InvoiceItem[]
 }
 
 model Category {
@@ -33,13 +41,85 @@ model Order {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   total     Float
-  // Añade más campos según sea necesario
+  status    String  
+  clientId  Int
+  client    Client   @relation(fields: [clientId], references: [id])
 }
 
 model TechService {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
-  description String
-  status      String
-  // Añade más campos según sea necesario
+  id           Int      @id @default(autoincrement())
+  createdAt    DateTime @default(now())
+  description  String
+  status       String
+  clientId     Int
+  client       Client   @relation(fields: [clientId], references: [id])
+  deviceType   String
+  serialNumber String?
+  technicianId Int
+  technician   User     @relation(fields: [technicianId], references: [id])
+}
+
+model Invoice {
+  id              Int           @id @default(autoincrement())
+  number          String        @unique
+  date            DateTime      @default(now())
+  total           Float
+  clientId        Int
+  client          Client        @relation(fields: [clientId], references: [id])
+  items           InvoiceItem[]
+  companyInfoId   Int
+  companyInfo     CompanyInfo   @relation(fields: [companyInfoId], references: [id])
+  clientName      String
+  clientAddress   String?
+  clientPhone     String?
+  clientEmail     String?
+  clientTaxId     String?
+}
+
+model InvoiceItem {
+  id        Int     @id @default(autoincrement())
+  invoiceId Int
+  invoice   Invoice @relation(fields: [invoiceId], references: [id])
+  articleId Int
+  article   Article @relation(fields: [articleId], references: [id])
+  quantity  Int
+  price     Float
+  subtotal  Float
+}
+
+model Client {
+  id           Int           @id @default(autoincrement())
+  name         String
+  email        String?
+  phone        String?
+  address      String?
+  taxId        String?
+  orders       Order[]
+  techServices TechService[]
+  invoices     Invoice[]
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  name         String
+  email        String        @unique
+  password     String
+  role         Role
+  techServices TechService[]
+}
+
+model CompanyInfo {
+  id      Int       @id @default(autoincrement())
+  name    String
+  address String
+  phone   String
+  email   String
+  taxId   String
+  invoices Invoice[]
+}
+
+enum Role {
+  ADMIN
+  SELLER
+  TECHNICIAN
 }
