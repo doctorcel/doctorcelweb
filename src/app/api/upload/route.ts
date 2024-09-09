@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   const data = await request.formData();
   const file: File | null = data.get('file') as unknown as File;
@@ -13,11 +15,11 @@ export async function POST(request: NextRequest) {
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
 
-  // Asegúrate de que esta ruta sea relativa a la raíz de tu proyecto
+  // Make sure this path is relative to the root of your project
   const uploadDir = join(process.cwd(), 'public', 'uploads');
 
   try {
-    // Intenta crear el directorio si no existe
+    // Try to create the directory if it doesn't exist
     await mkdir(uploadDir, { recursive: true });
   } catch (error) {
     console.error('Failed to create upload directory:', error);
@@ -38,9 +40,3 @@ export async function POST(request: NextRequest) {
   const fileUrl = `/uploads/${fileName}`;
   return NextResponse.json({ success: true, url: fileUrl });
 }
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
