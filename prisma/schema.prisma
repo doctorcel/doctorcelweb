@@ -14,7 +14,7 @@ model Article {
   price         Float
   categoryId    Int
   category      Category      @relation(fields: [categoryId], references: [id])
-  camara        String?
+  camera        String?
   ram           String?
   storage       String?
   processor     String?
