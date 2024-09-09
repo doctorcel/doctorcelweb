@@ -1,13 +1,13 @@
 import React from 'react';
-import { Layout } from '@/components/Layout';
 import { ProductManagement } from '@/components/dashboard/ProductManagement';
 import { InvoiceManagement } from '@/components/dashboard/InvoiceManagement';
 import { TechServiceManagement } from '@/components/dashboard/TechServiceManagement';
-import styles from '@/styles/Dashboard.module.scss';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import styles from '@/styles/dashboard/Dashboard.module.scss';
 
-const Dashboard: React.FC = () => {
+export default function Dashboard() {
   return (
-    <Layout>
+    <ProtectedRoute>
       <div className={styles.dashboard}>
         <h1>Panel de Administración</h1>
         <div className={styles.modules}>
@@ -16,8 +16,6 @@ const Dashboard: React.FC = () => {
           <TechServiceManagement />
         </div>
       </div>
-    </Layout>
+    </ProtectedRoute>
   );
-};
-
-export default Dashboard;
+}
