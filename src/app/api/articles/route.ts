@@ -44,7 +44,8 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const { id, ...updateData } = await request.json()
+    const id = request.nextUrl.searchParams.get('id');
+    const updateData = await request.json();
     const updatedArticle = await prisma.article.update({
       where: { id: Number(id) },
       data: {
@@ -66,10 +67,10 @@ export async function PATCH(request: NextRequest) {
         ...(updateData.price16Months !== undefined ? { price16Months: Number(updateData.price16Months) } : {}),
       },
     })
-    return NextResponse.json(updatedArticle)
+    return NextResponse.json(updatedArticle);
   } catch (error) {
-    console.error('Error updating article:', error)
-    return NextResponse.json({ error: 'Error updating article' }, { status: 500 })
+    console.error('Error updating article:', error);
+    return NextResponse.json({ error: 'Error updating article' }, { status: 500 });
   }
 }
 

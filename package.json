@@ -12,18 +12,22 @@
   "dependencies": {
     "@prisma/client": "^5.19.1",
     "bcryptjs": "^2.4.3",
+    "formidable": "^3.5.1",
     "jsonwebtoken": "^9.0.2",
     "next": "^14.2.8",
     "next-swagger-doc": "^0.4.0",
     "openssl": "^2.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-hook-form": "^7.53.0",
     "sass": "^1.78.0",
     "swagger-ui-react": "^5.17.14",
-    "vercel": "^37.4.0"
+    "vercel": "^37.4.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
+    "@types/formidable": "^3.4.5",
     "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20.16.5",
     "@types/react": "^18",
