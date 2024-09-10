@@ -2,3 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+input{
+    border: 1px solid gray;
+    border-radius: 5px;
+}
+
+button{
+    border-radius: 5px;
+    background-color: yellowgreen;
+}
