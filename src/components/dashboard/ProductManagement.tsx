@@ -1,7 +1,7 @@
 'use client'
-
 import React, { useState, useEffect } from 'react';
 import { Button, Input, Select, Modal } from '../ui/UiComponents';
+import { CldImage } from 'next-cloudinary';
 
 interface Article {
   id?: number;
@@ -44,6 +44,7 @@ export const ProductManagement: React.FC = () => {
   const [categoryFormData, setCategoryFormData] = useState<Category>({
     name: '',
   });
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchArticles();
@@ -108,6 +109,37 @@ export const ProductManagement: React.FC = () => {
     setCategoryFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, fieldName: keyof Article) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+  
+    const formData = new FormData();
+    formData.append('file', file);
+  
+    try {
+      setUploadError(null);
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to upload image');
+      }
+  
+      const data = await response.json();
+      if (data.success) {
+        setArticleFormData(prev => ({ ...prev, [fieldName]: data.result.secure_url }));
+      } else {
+        throw new Error(data.error || 'Unknown error occurred');
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      setUploadError(error instanceof Error ? error.message : 'An unknown error occurred');
+    }
+  };
+
   const handleArticleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -125,9 +157,9 @@ export const ProductManagement: React.FC = () => {
       let method = 'POST';
 
       if (currentArticle) {
-        url = `/api/articles?id=${currentArticle.id}`; // Añadimos el ID como parámetro de consulta
+        url = `/api/articles?id=${currentArticle.id}`;
         method = 'PATCH';
-        dataToSend.id = currentArticle.id; // Incluimos el ID en el cuerpo de la solicitud
+        dataToSend.id = currentArticle.id;
       }
 
       const response = await fetch(url, {
@@ -186,29 +218,6 @@ export const ProductManagement: React.FC = () => {
     }
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, fieldName: keyof Article) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-  
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', 'doctorcel'); // Asegúrate de reemplazarlo con tu preset
-  
-    try {
-      const response = await fetch('https://api.cloudinary.com/v1_1/drwqsyyv5/image/upload', {
-        method: 'POST',
-        body: formData,
-      });
-  
-      if (!response.ok) throw new Error('Failed to upload image');
-  
-      const data = await response.json();
-      setArticleFormData(prev => ({ ...prev, [fieldName]: data.secure_url }));
-    } catch (error) {
-      console.error('Error uploading image:', error);
-    }
-  };
-
   return (
     <div>
       <h2>Gestión de Artículos y Categorías</h2>
@@ -223,6 +232,7 @@ export const ProductManagement: React.FC = () => {
             <th>Descripción</th>
             <th>Precio</th>
             <th>Categoría</th>
+            <th>Imagen</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -233,6 +243,16 @@ export const ProductManagement: React.FC = () => {
               <td>{article.description}</td>
               <td>{article.price}</td>
               <td>{categories.find(c => c.id === article.categoryId)?.name}</td>
+              <td>
+                {article.imageUrl1 && (
+                  <CldImage
+                    width="100"
+                    height="100"
+                    src={article.imageUrl1}
+                    alt={article.name}
+                  />
+                )}
+              </td>
               <td>
                 <Button onClick={() => { setCurrentArticle(article); setIsArticleModalOpen(true); }}>Editar</Button>
                 <Button onClick={() => handleDeleteArticle(article.id!)}>Eliminar</Button>
@@ -291,11 +311,21 @@ export const ProductManagement: React.FC = () => {
               />
               <input
                 type="file"
-                accept="image/*"
                 onChange={(e) => handleImageUpload(e, field as keyof Article)}
+                accept="image/*"
               />
+              {articleFormData[field as keyof Article] && (
+                <CldImage
+                  width="100"
+                  height="100"
+                  src={articleFormData[field as keyof Article] as string}
+                  alt={`Imagen ${index + 1}`}
+                />
+              )}
             </div>
           ))}
+
+          {uploadError && <p style={{ color: 'red' }}>{uploadError}</p>}
 
           <Input name="price4Months" type="number" value={articleFormData.price4Months || ''} onChange={handleArticleInputChange} label="Precio 4 meses" step="0.01" />
           <Input name="price8Months" type="number" value={articleFormData.price8Months || ''} onChange={handleArticleInputChange} label="Precio 8 meses" step="0.01" />
