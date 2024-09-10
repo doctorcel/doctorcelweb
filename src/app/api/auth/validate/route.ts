@@ -1,24 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
 import jwt from 'jsonwebtoken'
+import { prisma } from '@/lib/prisma'
 
-export const dynamic = 'force-dynamic';
-
-const prisma = new PrismaClient()
+export const dynamic = 'force-dynamic'
 
 const SECRET_KEY = process.env.JWT_SECRET
 
 export async function GET(request: NextRequest) {
-  console.log('Validate endpoint reached');
+  console.log('Validate endpoint reached')
   console.log('Environment variables:', {
     DATABASE_URL: process.env.DATABASE_URL ? 'Set' : 'Not set',
     JWT_SECRET: process.env.JWT_SECRET ? 'Set' : 'Not set',
-  });
+  })
 
   try {
     if (!SECRET_KEY) {
-      console.error('JWT_SECRET is not defined');
-      return NextResponse.json({ message: 'Server configuration error' }, { status: 500 });
+      console.error('JWT_SECRET is not defined')
+      return NextResponse.json({ message: 'Server configuration error' }, { status: 500 })
     }
 
     const authHeader = request.headers.get('Authorization')
@@ -57,7 +55,5 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ message: 'Invalid token' }, { status: 401 })
     }
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 })
-  } finally {
-    await prisma.$disconnect()
   }
 }

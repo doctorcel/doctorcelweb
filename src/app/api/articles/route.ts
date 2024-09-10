@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 
-const prisma = new PrismaClient()
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    const articles = await prisma.article.findMany()
+    const articles = await prisma.article.findMany({
+      include: { category: true } // Incluye la información de la categoría si es necesario
+    })
     return NextResponse.json(articles)
   } catch (error) {
+    console.error('Error fetching articles:', error)
     return NextResponse.json({ error: 'Error fetching articles' }, { status: 500 })
   }
 }
@@ -19,20 +22,20 @@ export async function POST(request: NextRequest) {
       data: {
         name: body.name,
         description: body.description,
-        price: body.price,
-        categoryId: body.categoryId,
-        ...(body.camera !== undefined ? { camera: body.camera } : {}),
-        ...(body.ram !== undefined ? { ram: body.ram } : {}),
-        ...(body.storage !== undefined ? { storage: body.storage } : {}),
-        ...(body.processor !== undefined ? { processor: body.processor } : {}),
-        ...(body.imageUrl1 !== undefined ? { imageUrl1: body.imageUrl1 } : {}),
-        ...(body.imageUrl2 !== undefined ? { imageUrl2: body.imageUrl2 } : {}),
-        ...(body.imageUrl3 !== undefined ? { imageUrl3: body.imageUrl3 } : {}),
-        ...(body.imageUrl4 !== undefined ? { imageUrl4: body.imageUrl4 } : {}),
-        ...(body.price4Months !== undefined ? { price4Months: body.price4Months } : {}),
-        ...(body.price8Months !== undefined ? { price8Months: body.price8Months } : {}),
-        ...(body.price12Months !== undefined ? { price12Months: body.price12Months } : {}),
-        ...(body.price16Months !== undefined ? { price16Months: body.price16Months } : {}),
+        price: parseFloat(body.price),
+        categoryId: parseInt(body.categoryId),
+        camera: body.camera,
+        ram: body.ram,
+        storage: body.storage,
+        processor: body.processor,
+        imageUrl1: body.imageUrl1,
+        imageUrl2: body.imageUrl2,
+        imageUrl3: body.imageUrl3,
+        imageUrl4: body.imageUrl4,
+        price4Months: body.price4Months ? parseFloat(body.price4Months) : null,
+        price8Months: body.price8Months ? parseFloat(body.price8Months) : null,
+        price12Months: body.price12Months ? parseFloat(body.price12Months) : null,
+        price16Months: body.price16Months ? parseFloat(body.price16Months) : null,
       }
     })
     return NextResponse.json(newArticle, { status: 201 })
@@ -44,41 +47,47 @@ export async function POST(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   try {
-    const id = request.nextUrl.searchParams.get('id');
-    const updateData = await request.json();
+    const id = request.nextUrl.searchParams.get('id')
+    if (!id) {
+      return NextResponse.json({ error: 'Article ID is required' }, { status: 400 })
+    }
+    const updateData = await request.json()
     const updatedArticle = await prisma.article.update({
-      where: { id: Number(id) },
+      where: { id: parseInt(id) },
       data: {
-        ...(updateData.name !== undefined ? { name: updateData.name } : {}),
-        ...(updateData.description !== undefined ? { description: updateData.description } : {}),
-        ...(updateData.price !== undefined ? { price: Number(updateData.price) } : {}),
-        ...(updateData.categoryId !== undefined ? { categoryId: Number(updateData.categoryId) } : {}),
-        ...(updateData.camera !== undefined ? { camera: updateData.camera } : {}),
-        ...(updateData.ram !== undefined ? { ram: updateData.ram } : {}),
-        ...(updateData.storage !== undefined ? { storage: updateData.storage } : {}),
-        ...(updateData.processor !== undefined ? { processor: updateData.processor } : {}),
-        ...(updateData.imageUrl1 !== undefined ? { imageUrl1: updateData.imageUrl1 } : {}),
-        ...(updateData.imageUrl2 !== undefined ? { imageUrl2: updateData.imageUrl2 } : {}),
-        ...(updateData.imageUrl3 !== undefined ? { imageUrl3: updateData.imageUrl3 } : {}),
-        ...(updateData.imageUrl4 !== undefined ? { imageUrl4: updateData.imageUrl4 } : {}),
-        ...(updateData.price4Months !== undefined ? { price4Months: Number(updateData.price4Months) } : {}),
-        ...(updateData.price8Months !== undefined ? { price8Months: Number(updateData.price8Months) } : {}),
-        ...(updateData.price12Months !== undefined ? { price12Months: Number(updateData.price12Months) } : {}),
-        ...(updateData.price16Months !== undefined ? { price16Months: Number(updateData.price16Months) } : {}),
+        name: updateData.name,
+        description: updateData.description,
+        price: updateData.price ? parseFloat(updateData.price) : undefined,
+        categoryId: updateData.categoryId ? parseInt(updateData.categoryId) : undefined,
+        camera: updateData.camera,
+        ram: updateData.ram,
+        storage: updateData.storage,
+        processor: updateData.processor,
+        imageUrl1: updateData.imageUrl1,
+        imageUrl2: updateData.imageUrl2,
+        imageUrl3: updateData.imageUrl3,
+        imageUrl4: updateData.imageUrl4,
+        price4Months: updateData.price4Months ? parseFloat(updateData.price4Months) : null,
+        price8Months: updateData.price8Months ? parseFloat(updateData.price8Months) : null,
+        price12Months: updateData.price12Months ? parseFloat(updateData.price12Months) : null,
+        price16Months: updateData.price16Months ? parseFloat(updateData.price16Months) : null,
       },
     })
-    return NextResponse.json(updatedArticle);
+    return NextResponse.json(updatedArticle)
   } catch (error) {
-    console.error('Error updating article:', error);
-    return NextResponse.json({ error: 'Error updating article' }, { status: 500 });
+    console.error('Error updating article:', error)
+    return NextResponse.json({ error: 'Error updating article' }, { status: 500 })
   }
 }
 
 export async function DELETE(request: NextRequest) {
   try {
-    const { id } = await request.json()
+    const id = request.nextUrl.searchParams.get('id')
+    if (!id) {
+      return NextResponse.json({ error: 'Article ID is required' }, { status: 400 })
+    }
     await prisma.article.delete({
-      where: { id: Number(id) },
+      where: { id: parseInt(id) },
     })
     return NextResponse.json({ message: 'Article deleted successfully' })
   } catch (error) {
