@@ -5,6 +5,7 @@ import { TechServiceManagement } from '@/components/dashboard/TechServiceManagem
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import styles from '@/styles/dashboard/Dashboard.module.scss';
 import UserManagement from '@/components/dashboard/UserManagement';
+import CategoryManagement from '@/components/dashboard/CategoryManagement';
 
 export default function Dashboard() {
   return (
@@ -13,6 +14,7 @@ export default function Dashboard() {
         <h1>Panel de Administración</h1>
         <div className={styles.modules}>
           <ProductManagement />
+          <CategoryManagement />
           <UserManagement/>
           <InvoiceManagement />
           <TechServiceManagement />
