@@ -3,8 +3,18 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Warehouse {
+  id           Int           @id @default(autoincrement())
+  name         String
+  description  String?
+  articles     Article[]
+  invoices     Invoice[]
+  techServices TechService[]
 }
 
 model Article {
@@ -13,21 +23,23 @@ model Article {
   description   String
   price         Float
   categoryId    Int
-  category      Category      @relation(fields: [categoryId], references: [id])
   camera        String?
+  createdAt     DateTime      @default(now())
+  price12Months Float?
+  price16Months Float?
+  price4Months  Float?
+  price8Months  Float?
+  processor     String?
   ram           String?
   storage       String?
-  processor     String?
+  updatedAt     DateTime      @updatedAt
   imageUrl1     String?
   imageUrl2     String?
   imageUrl3     String?
   imageUrl4     String?
-  price4Months  Float?
-  price8Months  Float?
-  price12Months Float?
-  price16Months Float?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  warehouseId   Int
+  category      Category      @relation(fields: [categoryId], references: [id])
+  warehouse     Warehouse     @relation(fields: [warehouseId], references: [id])
   InvoiceItem   InvoiceItem[]
 }
 
@@ -41,50 +53,54 @@ model Order {
   id        Int      @id @default(autoincrement())
   createdAt DateTime @default(now())
   total     Float
-  status    String  
+  status    String
   clientId  Int
   client    Client   @relation(fields: [clientId], references: [id])
 }
 
 model TechService {
-  id           Int      @id @default(autoincrement())
-  createdAt    DateTime @default(now())
+  id           Int       @id @default(autoincrement())
+  createdAt    DateTime  @default(now())
   description  String
   status       String
-  clientId     Int
-  client       Client   @relation(fields: [clientId], references: [id])
   deviceType   String
   serialNumber String?
+  clientId     Int
   technicianId Int
-  technician   User     @relation(fields: [technicianId], references: [id])
+  warehouseId  Int
+  client       Client    @relation(fields: [clientId], references: [id])
+  technician   User      @relation(fields: [technicianId], references: [id])
+  warehouse    Warehouse @relation(fields: [warehouseId], references: [id])
 }
 
 model Invoice {
-  id              Int           @id @default(autoincrement())
-  number          String        @unique
-  date            DateTime      @default(now())
-  total           Float
-  clientId        Int
-  client          Client        @relation(fields: [clientId], references: [id])
-  items           InvoiceItem[]
-  companyInfoId   Int
-  companyInfo     CompanyInfo   @relation(fields: [companyInfoId], references: [id])
-  clientName      String
-  clientAddress   String?
-  clientPhone     String?
-  clientEmail     String?
-  clientTaxId     String?
+  id            Int           @id @default(autoincrement())
+  number        String        @unique
+  date          DateTime      @default(now())
+  total         Float
+  clientId      Int
+  companyInfoId Int
+  clientName    String
+  clientAddress String?
+  clientPhone   String?
+  clientEmail   String?
+  clientTaxId   String?
+  warehouseId   Int
+  client        Client        @relation(fields: [clientId], references: [id])
+  companyInfo   CompanyInfo   @relation(fields: [companyInfoId], references: [id])
+  warehouse     Warehouse     @relation(fields: [warehouseId], references: [id])
+  items         InvoiceItem[]
 }
 
 model InvoiceItem {
   id        Int     @id @default(autoincrement())
   invoiceId Int
-  invoice   Invoice @relation(fields: [invoiceId], references: [id])
   articleId Int
-  article   Article @relation(fields: [articleId], references: [id])
   quantity  Int
   price     Float
   subtotal  Float
+  article   Article @relation(fields: [articleId], references: [id])
+  invoice   Invoice @relation(fields: [invoiceId], references: [id])
 }
 
 model Client {
@@ -94,9 +110,9 @@ model Client {
   phone        String?
   address      String?
   taxId        String?
+  invoices     Invoice[]
   orders       Order[]
   techServices TechService[]
-  invoices     Invoice[]
 }
 
 model User {
@@ -109,12 +125,12 @@ model User {
 }
 
 model CompanyInfo {
-  id      Int       @id @default(autoincrement())
-  name    String
-  address String
-  phone   String
-  email   String
-  taxId   String
+  id       Int       @id @default(autoincrement())
+  name     String
+  address  String
+  phone    String
+  email    String
+  taxId    String
   invoices Invoice[]
 }
 
