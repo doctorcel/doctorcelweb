@@ -11,17 +11,23 @@ interface Article {
   categoryId: number;
   warehouseId: number;
   camera?: string;
+  frontCamera?: string;
   ram?: string;
   storage?: string;
   processor?: string;
+  screenSize?: string;
+  batteryCapacity?: string;
   imageUrl1?: string;
   imageUrl2?: string;
   imageUrl3?: string;
   imageUrl4?: string;
-  price4Months?: number;
-  price8Months?: number;
-  price12Months?: number;
-  price16Months?: number;
+  Initial?: number;
+  price8?: number;
+  price12?: number;
+  price16?: number;
+  brand?: string;
+  financialEntity?: string;
+  offerPrice?: number;
 }
 
 interface Category {
@@ -63,50 +69,279 @@ export const ProductManagement: React.FC = () => {
     fetchWarehouses();
   }, []);
 
-  // ... (mantener los useEffect para articles y warehouses)
+  useEffect(() => {
+    if (currentArticle) {
+      setArticleFormData(currentArticle);
+    } else {
+      setArticleFormData({
+        name: '',
+        description: '',
+        price: 0,
+        categoryId: 0,
+        warehouseId: 0,
+      });
+    }
+  }, [currentArticle]);
+
+  useEffect(() => {
+    if (currentWarehouse) {
+      setWarehouseFormData(currentWarehouse);
+    } else {
+      setWarehouseFormData({
+        name: '',
+        description: '',
+      });
+    }
+  }, [currentWarehouse]);
 
   const getToken = () => {
     return localStorage.getItem('token');
   };
-
+  
   const fetchArticles = async () => {
-    // ... (mantener como está)
+    try {
+      const token = getToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      const response = await fetch('/api/articles', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Error al cargar los artículos');
+      const data = await response.json();
+      setArticles(data);
+    } catch (error) {
+      console.error('Error fetching articles:', error);
+      setError(error instanceof Error ? error.message : 'Error fetching articles');
+    }
   };
 
   const fetchCategories = async () => {
-    // ... (mantener como está, solo para obtener la lista de categorías)
+    try {
+      const token = getToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      const response = await fetch('/api/categories', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Error al cargar las categorías');
+      const data = await response.json();
+      setCategories(data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      setError(error instanceof Error ? error.message : 'Error fetching categories');
+    }
   };
 
   const fetchWarehouses = async () => {
-    // ... (mantener como está)
+    try {
+      const token = getToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      const response = await fetch('/api/warehouses', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Error al cargar las bodegas');
+      const data = await response.json();
+      setWarehouses(data);
+    } catch (error) {
+      console.error('Error fetching warehouses:', error);
+      setError(error instanceof Error ? error.message : 'Error fetching warehouses');
+    }
   };
 
   const handleArticleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    // ... (mantener como está)
+    const { name, value } = e.target;
+    setArticleFormData(prev => ({
+      ...prev,
+      [name]: name.includes('price') || name === 'categoryId' || name === 'warehouseId' || name === 'Initial' || name === 'offerPrice'
+        ? parseFloat(value) || 0 
+        : value
+    }));
   };
 
   const handleWarehouseInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // ... (mantener como está)
+    const { name, value } = e.target;
+    setWarehouseFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, fieldName: keyof Article) => {
-    // ... (mantener como está)
+    const file = event.target.files?.[0];
+    if (!file) return;
+  
+    const formData = new FormData();
+    formData.append('file', file);
+  
+    try {
+      setUploadError(null);
+      const token = getToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData,
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to upload image');
+      }
+  
+      const data = await response.json();
+      if (data.success) {
+        setArticleFormData(prev => ({ ...prev, [fieldName]: data.result.secure_url }));
+      } else {
+        throw new Error(data.error || 'Unknown error occurred');
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      setUploadError(error instanceof Error ? error.message : 'An unknown error occurred');
+    }
   };
 
   const handleArticleSubmit = async (e: React.FormEvent) => {
-    // ... (mantener como está)
+    e.preventDefault();
+    try {
+      const token = getToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      const dataToSend = {
+        ...articleFormData,
+        price: parseFloat(articleFormData.price.toString()),
+        categoryId: parseInt(articleFormData.categoryId.toString(), 10),
+        warehouseId: parseInt(articleFormData.warehouseId.toString(), 10),
+        Initial: articleFormData.Initial,
+        price8: articleFormData.price8,
+        price12: articleFormData.price12,
+        price16: articleFormData.price16,
+        offerPrice: articleFormData.offerPrice,
+      };
+
+      let url = '/api/articles';
+      let method = 'POST';
+
+      if (currentArticle) {
+        url = `/api/articles?id=${currentArticle.id}`;
+        method = 'PATCH';
+        dataToSend.id = currentArticle.id;
+      }
+
+      const response = await fetch(url, {
+        method: method,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(dataToSend),
+      });
+
+      if (!response.ok) throw new Error('Error al guardar el artículo');
+      setIsArticleModalOpen(false);
+      fetchArticles();
+    } catch (error) {
+      console.error('Error saving article:', error);
+      setError(error instanceof Error ? error.message : 'Error saving article');
+    }
   };
 
   const handleWarehouseSubmit = async (e: React.FormEvent) => {
-    // ... (mantener como está)
+    e.preventDefault();
+    try {
+      const token = getToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      const url = currentWarehouse ? `/api/warehouses/${currentWarehouse.id}` : '/api/warehouses';
+      const method = currentWarehouse ? 'PUT' : 'POST';
+      const response = await fetch(url, {
+        method: method,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(warehouseFormData),
+      });
+      if (!response.ok) throw new Error('Error al guardar la bodega');
+      setIsWarehouseModalOpen(false);
+      fetchWarehouses();
+    } catch (error) {
+      console.error('Error saving warehouse:', error);
+      setError(error instanceof Error ? error.message : 'Error saving warehouse');
+    }
   };
 
   const handleDeleteArticle = async (id: number) => {
-    // ... (mantener como está)
+    try {
+      const token = getToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      const response = await fetch(`/api/articles?id=${id}`, {
+        method: 'DELETE',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+      if (!response.ok) throw new Error('Error al eliminar el artículo');
+      fetchArticles();
+    } catch (error) {
+      console.error('Error deleting article:', error);
+      setError(error instanceof Error ? error.message : 'Error deleting article');
+    }
+  };
+
+  const handleDeleteCategory = async (id: number) => {
+    try {
+      const token = getToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      const response = await fetch(`/api/categories/${id}`, { 
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Error al eliminar la categoría');
+      fetchCategories();
+    } catch (error) {
+      console.error('Error deleting category:', error);
+      setError(error instanceof Error ? error.message : 'Error deleting category');
+    }
   };
 
   const handleDeleteWarehouse = async (id: number) => {
-    // ... (mantener como está)
+    try {
+      const token = getToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      const response = await fetch(`/api/warehouses/${id}`, { 
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (!response.ok) throw new Error('Error al eliminar la bodega');
+      fetchWarehouses();
+    } catch (error) {
+      console.error('Error deleting warehouse:', error);
+      setError(error instanceof Error ? error.message : 'Error deleting warehouse');
+    }
   };
 
   return (
@@ -125,6 +360,7 @@ export const ProductManagement: React.FC = () => {
             <th>Precio</th>
             <th>Categoría</th>
             <th>Bodega</th>
+            <th>Marca</th>
             <th>Imagen</th>
             <th>Acciones</th>
           </tr>
@@ -137,6 +373,7 @@ export const ProductManagement: React.FC = () => {
               <td>{article.price}</td>
               <td>{categories.find(c => c.id === article.categoryId)?.name}</td>
               <td>{warehouses.find(w => w.id === article.warehouseId)?.name}</td>
+              <td>{article.brand}</td>
               <td>
                 {article.imageUrl1 && (
                   <CldImage
@@ -181,7 +418,67 @@ export const ProductManagement: React.FC = () => {
 
       <Modal isOpen={isArticleModalOpen} onClose={() => { setIsArticleModalOpen(false); setCurrentArticle(null); }}>
         <form onSubmit={handleArticleSubmit}>
-          {/* ... (mantener los campos del formulario de artículo) */}
+          <Input name="name" value={articleFormData.name} onChange={handleArticleInputChange} label="Nombre" required />
+          <Input name="description" value={articleFormData.description} onChange={handleArticleInputChange} label="Descripción" required />
+          <Input name="price" type="number" value={articleFormData.price} onChange={handleArticleInputChange} label="Precio" required step="0.01" />
+          <Input name="brand" value={articleFormData.brand || ''} onChange={handleArticleInputChange} label="Marca" />
+          <Select
+            name="categoryId"
+            value={articleFormData.categoryId}
+            onChange={handleArticleInputChange}
+            label="Categoría"
+            options={categories.map(c => ({ value: c.id!, label: c.name }))}
+            required
+          />
+          <Select
+            name="warehouseId"
+            value={articleFormData.warehouseId}
+            onChange={handleArticleInputChange}
+            label="Bodega"
+            options={warehouses.map(w => ({ value: w.id!, label: w.name }))}
+            required
+          />
+          <Input name="camera" value={articleFormData.camera || ''} onChange={handleArticleInputChange} label="Cámara" />
+          <Input name="frontCamera" value={articleFormData.frontCamera || ''} onChange={handleArticleInputChange} label="Cámara Frontal" />
+          <Input name="ram" value={articleFormData.ram || ''} onChange={handleArticleInputChange} label="RAM" />
+          <Input name="storage" value={articleFormData.storage || ''} onChange={handleArticleInputChange} label="Almacenamiento" />
+          <Input name="processor" value={articleFormData.processor || ''} onChange={handleArticleInputChange} label="Procesador" />
+          <Input name="screenSize" value={articleFormData.screenSize || ''} onChange={handleArticleInputChange} label="Tamaño de Pantalla" />
+          <Input name="batteryCapacity" value={articleFormData.batteryCapacity || ''} onChange={handleArticleInputChange} label="Capacidad de Batería" />
+
+          {['imageUrl1', 'imageUrl2', 'imageUrl3', 'imageUrl4'].map((field, index) => (
+            <div key={field}>
+              <Input
+                name={field}
+                value={articleFormData[field as keyof Article] || ''}
+                onChange={handleArticleInputChange}
+                label={`URL de imagen ${index + 1}`}
+              />
+              <input
+                type="file"
+                onChange={(e) => handleImageUpload(e, field as keyof Article)}
+                accept="image/*"
+              />
+              {articleFormData[field as keyof Article] && (
+                <CldImage
+                  width="100"
+                  height="100"
+                  src={articleFormData[field as keyof Article] as string}
+                  alt={`Imagen ${index + 1}`}
+                />
+              )}
+            </div>
+          ))}
+
+          {uploadError && <p style={{ color: 'red' }}>{uploadError}</p>}
+
+          <Input name="Initial" type="number" value={articleFormData.Initial || ''} onChange={handleArticleInputChange} label="Inicial" step="0.01" />
+          <Input name="price8" type="number" value={articleFormData.price8 || ''} onChange={handleArticleInputChange} label="Precio 8 meses" step="0.01" />
+          <Input name="price12" type="number" value={articleFormData.price12 || ''} onChange={handleArticleInputChange} label="Precio 12 meses" step="0.01" />
+          <Input name="price16" type="number" value={articleFormData.price16 || ''} onChange={handleArticleInputChange} label="Precio 16 meses" step="0.01" />
+          <Input name="financialEntity" value={articleFormData.financialEntity || ''} onChange={handleArticleInputChange} label="Entidad Financiera" />
+          <Input name="offerPrice" type="number" value={articleFormData.offerPrice || ''} onChange={handleArticleInputChange} label="Precio de Oferta" step="0.01" />
+          <Button type="submit">{currentArticle ? 'Actualizar' : 'Crear'} Artículo</Button>
         </form>
       </Modal>
 

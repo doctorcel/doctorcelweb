@@ -1,7 +1,10 @@
 import React from 'react';
 import type { Metadata } from 'next';
+import { Onest } from "next/font/google";
 import { AuthProvider } from '@/contexts/AuthContext';
 import '../app/globals.css'
+
+const onest = Onest({weight: "400", subsets: ["latin"]})
 
 export const metadata: Metadata = {
   title: 'Doctor Cel',
@@ -17,13 +20,7 @@ export default function RootLayout({
     <html lang="es">
       <body>
         <AuthProvider>
-          <nav>
-            {/* Agregar navegación aquí */}
-          </nav>
-          <main>{children}</main>
-          <footer>
-            <p>&copy; 2024 Doctor Cel. Todos los derechos reservados.</p>
-          </footer>
+          <main className={onest.className}>{children}</main>
         </AuthProvider>
       </body>
     </html>

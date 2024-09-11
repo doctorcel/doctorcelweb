@@ -1,8 +1,14 @@
+export interface Subcategory {
+  id: number;
+  name: string;
+  categoryId: number;
+}
+
 export interface Category {
-    id: number;
-    name: string;
-  }
-  
+  id: number;
+  name: string;
+  subcategories: Subcategory[];
+}
 
 export interface Article {
   id?: number;
@@ -12,15 +18,23 @@ export interface Article {
   categoryId: number;
   warehouseId: number;
   camera?: string;
+  createdAt?: Date;
+  price12?: number | null;
+  price16?: number | null;
+  Initial?: number | null;
+  price8?: number | null;
+  processor?: string;
   ram?: string;
   storage?: string;
-  processor?: string;
+  updatedAt?: Date;
   imageUrl1?: string;
   imageUrl2?: string;
   imageUrl3?: string;
   imageUrl4?: string;
-  price4Months?: number;
-  price8Months?: number;
-  price12Months?: number;
-  price16Months?: number;
+  brand?: string;
+  frontCamera?: string;
+  screenSize?: string;
+  batteryCapacity?: string;
+  financialEntity?: string;
+  offerPrice: number;
 }

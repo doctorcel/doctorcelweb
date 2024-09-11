@@ -26,7 +26,12 @@ export async function POST(request: NextRequest) {
         deviceType: body.deviceType,
         serialNumber: body.serialNumber,
         technicianId: parseInt(body.technicianId),
-        warehouseId: parseInt(body.warehouseId) // Nuevo campo requerido
+        warehouseId: parseInt(body.warehouseId),
+        deliveryDate: body.deliveryDate ? new Date(body.deliveryDate) : undefined,
+        brand: body.brand,
+        color: body.color,
+        observations: body.observations,
+        password: body.password
       },
       include: { client: true, technician: true, warehouse: true }
     });
@@ -56,7 +61,12 @@ export async function PATCH(request: NextRequest) {
         deviceType: updateData.deviceType,
         serialNumber: updateData.serialNumber,
         technicianId: updateData.technicianId ? parseInt(updateData.technicianId) : undefined,
-        warehouseId: updateData.warehouseId ? parseInt(updateData.warehouseId) : undefined
+        warehouseId: updateData.warehouseId ? parseInt(updateData.warehouseId) : undefined,
+        deliveryDate: updateData.deliveryDate ? new Date(updateData.deliveryDate) : undefined,
+        brand: updateData.brand,
+        color: updateData.color,
+        observations: updateData.observations,
+        password: updateData.password
       },
       include: { client: true, technician: true, warehouse: true }
     });

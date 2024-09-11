@@ -14,14 +14,15 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { invoiceId, articleId, quantity, price, subtotal } = await request.json()
+    const { invoiceId, articleId, quantity, price, subtotal, discount } = await request.json()
     const newInvoiceItem = await prisma.invoiceItem.create({
       data: { 
         invoiceId: Number(invoiceId),
         articleId: Number(articleId),
         quantity: Number(quantity),
         price: Number(price),
-        subtotal: Number(subtotal)
+        subtotal: Number(subtotal),
+        discount: discount ? Number(discount) : 0
       }
     })
     return NextResponse.json(newInvoiceItem, { status: 201 })
@@ -41,6 +42,7 @@ export async function PATCH(request: NextRequest) {
         ...(updateData.quantity && { quantity: Number(updateData.quantity) }),
         ...(updateData.price && { price: Number(updateData.price) }),
         ...(updateData.subtotal && { subtotal: Number(updateData.subtotal) }),
+        ...(updateData.discount && { discount: Number(updateData.discount) }),
       },
     })
     return NextResponse.json(updatedInvoiceItem)

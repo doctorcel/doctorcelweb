@@ -25,10 +25,10 @@ model Article {
   categoryId    Int
   camera        String?
   createdAt     DateTime      @default(now())
-  price12Months Float?
-  price16Months Float?
-  price4Months  Float?
-  price8Months  Float?
+  price12       Float?
+  price16       Float?
+  Initial       Float?
+  price8        Float?
   processor     String?
   ram           String?
   storage       String?
@@ -38,19 +38,34 @@ model Article {
   imageUrl3     String?
   imageUrl4     String?
   warehouseId   Int
+  brand         String?       // Nuevo campo
+  frontCamera   String?       // Nuevo campo
+  screenSize    String?       // Nuevo campo
+  batteryCapacity String?     // Nuevo campo
+  financialEntity String?     // Nuevo campo
+  offerPrice    Float?        // Nuevo campo
   category      Category      @relation(fields: [categoryId], references: [id])
   warehouse     Warehouse     @relation(fields: [warehouseId], references: [id])
   InvoiceItem   InvoiceItem[]
 }
 
 model Category {
-  id       Int       @id @default(autoincrement())
-  name     String
-  articles Article[]
+  id            Int            @id @default(autoincrement())
+  name          String
+  articles      Article[]
+  subcategories Subcategory[]
+}
+
+model Subcategory {
+  id         Int      @id @default(autoincrement())
+  name       String
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
 }
 
 model Order {
   id        Int      @id @default(autoincrement())
+  number    Int      @unique @default(autoincrement()) // Modificado
   createdAt DateTime @default(now())
   total     Float
   status    String
@@ -68,6 +83,11 @@ model TechService {
   clientId     Int
   technicianId Int
   warehouseId  Int
+  deliveryDate DateTime? // Nuevo campo
+  brand        String?   // Nuevo campo
+  color        String?   // Nuevo campo
+  observations String?   // Nuevo campo
+  password     String?   // Nuevo campo
   client       Client    @relation(fields: [clientId], references: [id])
   technician   User      @relation(fields: [technicianId], references: [id])
   warehouse    Warehouse @relation(fields: [warehouseId], references: [id])
@@ -75,7 +95,7 @@ model TechService {
 
 model Invoice {
   id            Int           @id @default(autoincrement())
-  number        String        @unique
+  number        Int           @unique @default(autoincrement()) // Modificado
   date          DateTime      @default(now())
   total         Float
   clientId      Int
@@ -99,6 +119,7 @@ model InvoiceItem {
   quantity  Int
   price     Float
   subtotal  Float
+  discount  Float?  // Nuevo campo
   article   Article @relation(fields: [articleId], references: [id])
   invoice   Invoice @relation(fields: [invoiceId], references: [id])
 }
@@ -110,6 +131,13 @@ model Client {
   phone        String?
   address      String?
   taxId        String?
+  documentType String?       // Nuevo campo
+  document     String?       // Nuevo campo
+  personType   String?       // Nuevo campo
+  regime       String?       // Nuevo campo
+  country      String?       // Nuevo campo
+  department   String?       // Nuevo campo
+  city         String?       // Nuevo campo
   invoices     Invoice[]
   orders       Order[]
   techServices TechService[]
@@ -125,13 +153,21 @@ model User {
 }
 
 model CompanyInfo {
-  id       Int       @id @default(autoincrement())
-  name     String
-  address  String
-  phone    String
-  email    String
-  taxId    String
-  invoices Invoice[]
+  id              Int       @id @default(autoincrement())
+  name            String
+  address         String
+  phone           String
+  email           String
+  taxId           String
+  logoUrl         String?   // Nuevo campo
+  documentType    String?   // Nuevo campo
+  documentNumber  String?   // Nuevo campo
+  regime          String?   // Nuevo campo
+  city            String?   // Nuevo campo
+  department      String?   // Nuevo campo
+  country         String?   // Nuevo campo
+  website         String?   // Nuevo campo
+  invoices        Invoice[]
 }
 
 enum Role {
