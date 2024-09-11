@@ -1,4 +1,3 @@
-// components/ui/accordion.tsx
 import * as React from "react"
 import { ChevronDown } from "lucide-react"
 
@@ -11,14 +10,14 @@ interface AccordionProps {
   children: React.ReactNode;
   type?: "single" | "multiple";
   collapsible?: boolean;
-  className?: string;  // Añadimos la prop className
+  className?: string;
 }
 
 export const Accordion: React.FC<AccordionProps> = ({ 
   children, 
   type = "single", 
   collapsible = false,
-  className = ""  // Proporcionamos un valor por defecto
+  className = ""
 }) => {
   const [activeItem, setActiveItem] = React.useState<string | null>(null);
 
@@ -29,11 +28,21 @@ export const Accordion: React.FC<AccordionProps> = ({
   );
 };
 
-export const AccordionItem = ({ children, value }: { children: React.ReactNode; value: string }) => {
+interface AccordionItemProps {
+  children: React.ReactNode;
+  value: string;
+}
+
+export const AccordionItem: React.FC<AccordionItemProps> = ({ children, value }) => {
   return <div className="border rounded-md">{children}</div>;
 };
 
-export const AccordionTrigger = ({ children, value }: { children: React.ReactNode; value: string }) => {
+interface AccordionTriggerProps {
+  children: React.ReactNode;
+  value: string;
+}
+
+export const AccordionTrigger: React.FC<AccordionTriggerProps> = ({ children, value }) => {
   const { activeItem, setActiveItem } = React.useContext(AccordionContext);
 
   const handleClick = () => {
@@ -52,7 +61,12 @@ export const AccordionTrigger = ({ children, value }: { children: React.ReactNod
   );
 };
 
-export const AccordionContent = ({ children, value }: { children: React.ReactNode; value: string }) => {
+interface AccordionContentProps {
+  children: React.ReactNode;
+  value: string;
+}
+
+export const AccordionContent: React.FC<AccordionContentProps> = ({ children, value }) => {
   const { activeItem } = React.useContext(AccordionContext);
 
   if (activeItem !== value) return null;

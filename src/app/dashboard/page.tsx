@@ -14,10 +14,10 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-8 text-green-600 dark:text-green-400">Panel de Administración</h1>
         <div className={styles.modules}>
           <ProductManagement />
-          {/* <CategoryManagement />
+          <CategoryManagement />
           <UserManagement/>
           <InvoiceManagement />
-          <TechServiceManagement /> */}
+          <TechServiceManagement />
         </div>
       </div>
     </ProtectedRoute>
