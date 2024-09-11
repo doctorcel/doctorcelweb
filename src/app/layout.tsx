@@ -2,9 +2,11 @@ import React from 'react';
 import type { Metadata } from 'next';
 import { Onest } from "next/font/google";
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ThemeProvider } from 'next-themes';
 import '../app/globals.css'
+import FloatingThemeToggle from '@/components/ui/DarkModeButton';
 
-const onest = Onest({weight: "400", subsets: ["latin"]})
+const onest = Onest({ weight: "400", subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: 'Doctor Cel',
@@ -17,11 +19,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="es">
-      <body>
-        <AuthProvider>
-          <main className={onest.className}>{children}</main>
-        </AuthProvider>
+    <html lang="es" suppressHydrationWarning>
+      <body className={onest.className}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <AuthProvider>
+            {children}
+            <FloatingThemeToggle />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

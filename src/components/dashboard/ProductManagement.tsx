@@ -1,77 +1,78 @@
 'use client'
-import React, { useState, useEffect } from 'react';
-import { Button, Input, Select, Modal } from '../ui/UiComponents';
-import { CldImage } from 'next-cloudinary';
+
+import React, { useState, useEffect } from 'react'
+import { CldImage } from 'next-cloudinary'
+import { Plus, Pencil, Trash2 } from 'lucide-react'
 
 interface Article {
-  id?: number;
-  name: string;
-  description: string;
-  price: number;
-  categoryId: number;
-  warehouseId: number;
-  camera?: string;
-  frontCamera?: string;
-  ram?: string;
-  storage?: string;
-  processor?: string;
-  screenSize?: string;
-  batteryCapacity?: string;
-  imageUrl1?: string;
-  imageUrl2?: string;
-  imageUrl3?: string;
-  imageUrl4?: string;
-  Initial?: number;
-  price8?: number;
-  price12?: number;
-  price16?: number;
-  brand?: string;
-  financialEntity?: string;
-  offerPrice?: number;
+  id?: number
+  name: string
+  description: string
+  price: number
+  categoryId: number
+  warehouseId: number
+  camera?: string
+  frontCamera?: string
+  ram?: string
+  storage?: string
+  processor?: string
+  screenSize?: string
+  batteryCapacity?: string
+  imageUrl1?: string
+  imageUrl2?: string
+  imageUrl3?: string
+  imageUrl4?: string
+  Initial?: number
+  price8?: number
+  price12?: number
+  price16?: number
+  brand?: string
+  financialEntity?: string
+  offerPrice?: number
 }
 
 interface Category {
-  id?: number;
-  name: string;
+  id?: number
+  name: string
 }
 
 interface Warehouse {
-  id?: number;
-  name: string;
-  description?: string;
+  id?: number
+  name: string
+  description?: string
 }
 
-export const ProductManagement: React.FC = () => {
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
-  const [isArticleModalOpen, setIsArticleModalOpen] = useState(false);
-  const [isWarehouseModalOpen, setIsWarehouseModalOpen] = useState(false);
-  const [currentArticle, setCurrentArticle] = useState<Article | null>(null);
-  const [currentWarehouse, setCurrentWarehouse] = useState<Warehouse | null>(null);
+export default function ProductManagement() {
+  const [articles, setArticles] = useState<Article[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([])
+  const [isArticleModalOpen, setIsArticleModalOpen] = useState(false)
+  const [isWarehouseModalOpen, setIsWarehouseModalOpen] = useState(false)
+  const [currentArticle, setCurrentArticle] = useState<Article | null>(null)
+  const [currentWarehouse, setCurrentWarehouse] = useState<Warehouse | null>(null)
   const [articleFormData, setArticleFormData] = useState<Article>({
     name: '',
     description: '',
     price: 0,
     categoryId: 0,
     warehouseId: 0,
-  });
+  })
   const [warehouseFormData, setWarehouseFormData] = useState<Warehouse>({
     name: '',
     description: '',
-  });
-  const [uploadError, setUploadError] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  })
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchArticles();
-    fetchCategories();
-    fetchWarehouses();
-  }, []);
+    fetchArticles()
+    fetchCategories()
+    fetchWarehouses()
+  }, [])
 
   useEffect(() => {
     if (currentArticle) {
-      setArticleFormData(currentArticle);
+      setArticleFormData(currentArticle)
     } else {
       setArticleFormData({
         name: '',
@@ -79,112 +80,115 @@ export const ProductManagement: React.FC = () => {
         price: 0,
         categoryId: 0,
         warehouseId: 0,
-      });
+      })
     }
-  }, [currentArticle]);
+  }, [currentArticle])
 
   useEffect(() => {
     if (currentWarehouse) {
-      setWarehouseFormData(currentWarehouse);
+      setWarehouseFormData(currentWarehouse)
     } else {
       setWarehouseFormData({
         name: '',
         description: '',
-      });
+      })
     }
-  }, [currentWarehouse]);
+  }, [currentWarehouse])
 
   const getToken = () => {
-    return localStorage.getItem('token');
-  };
-  
+    return localStorage.getItem('token')
+  }
+
   const fetchArticles = async () => {
     try {
-      const token = getToken();
+      const token = getToken()
       if (!token) {
-        throw new Error('No authentication token found');
+        throw new Error('No authentication token found')
       }
       const response = await fetch('/api/articles', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
-      });
-      if (!response.ok) throw new Error('Error al cargar los artículos');
-      const data = await response.json();
-      setArticles(data);
+      })
+      if (!response.ok) throw new Error('Error al cargar los artículos')
+      const data = await response.json()
+      setArticles(data)
     } catch (error) {
-      console.error('Error fetching articles:', error);
-      setError(error instanceof Error ? error.message : 'Error fetching articles');
+      console.error('Error fetching articles:', error)
+      setError(error instanceof Error ? error.message : 'Error fetching articles')
     }
-  };
+  }
 
   const fetchCategories = async () => {
     try {
-      const token = getToken();
+      const token = getToken()
       if (!token) {
-        throw new Error('No authentication token found');
+        throw new Error('No authentication token found')
       }
       const response = await fetch('/api/categories', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
-      });
-      if (!response.ok) throw new Error('Error al cargar las categorías');
-      const data = await response.json();
-      setCategories(data);
+      })
+      if (!response.ok) throw new Error('Error al cargar las categorías')
+      const data = await response.json()
+      setCategories(data)
     } catch (error) {
-      console.error('Error fetching categories:', error);
-      setError(error instanceof Error ? error.message : 'Error fetching categories');
+      console.error('Error fetching categories:', error)
+      setError(error instanceof Error ? error.message : 'Error fetching categories')
     }
-  };
+  }
 
   const fetchWarehouses = async () => {
     try {
-      const token = getToken();
+      const token = getToken()
       if (!token) {
-        throw new Error('No authentication token found');
+        throw new Error('No authentication token found')
       }
       const response = await fetch('/api/warehouses', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
-      });
-      if (!response.ok) throw new Error('Error al cargar las bodegas');
-      const data = await response.json();
-      setWarehouses(data);
+      })
+      if (!response.ok) throw new Error('Error al cargar las bodegas')
+      const data = await response.json()
+      setWarehouses(data)
     } catch (error) {
-      console.error('Error fetching warehouses:', error);
-      setError(error instanceof Error ? error.message : 'Error fetching warehouses');
+      console.error('Error fetching warehouses:', error)
+      setError(error instanceof Error ? error.message : 'Error fetching warehouses')
     }
-  };
-
-  const handleArticleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+  }
+  const handleArticleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target
     setArticleFormData(prev => ({
       ...prev,
       [name]: name.includes('price') || name === 'categoryId' || name === 'warehouseId' || name === 'Initial' || name === 'offerPrice'
-        ? parseFloat(value) || 0 
+        ? parseFloat(value) || 0
         : value
-    }));
-  };
+    }))
+  }
 
-  const handleWarehouseInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setWarehouseFormData(prev => ({ ...prev, [name]: value }));
-  };
+  const handleWarehouseInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target
+    setWarehouseFormData(prev => ({ ...prev, [name]: value }))
+  }
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, fieldName: keyof Article) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-  
-    const formData = new FormData();
-    formData.append('file', file);
-  
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const formData = new FormData()
+    formData.append('file', file)
+
     try {
-      setUploadError(null);
-      const token = getToken();
+      setUploadError(null)
+      const token = getToken()
       if (!token) {
-        throw new Error('No authentication token found');
+        throw new Error('No authentication token found')
       }
       const response = await fetch('/api/upload', {
         method: 'POST',
@@ -192,31 +196,31 @@ export const ProductManagement: React.FC = () => {
           'Authorization': `Bearer ${token}`
         },
         body: formData,
-      });
-  
+      })
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to upload image');
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Failed to upload image')
       }
-  
-      const data = await response.json();
+
+      const data = await response.json()
       if (data.success) {
-        setArticleFormData(prev => ({ ...prev, [fieldName]: data.result.secure_url }));
+        setArticleFormData(prev => ({ ...prev, [fieldName]: data.result.secure_url }))
       } else {
-        throw new Error(data.error || 'Unknown error occurred');
+        throw new Error(data.error || 'Unknown error occurred')
       }
     } catch (error) {
-      console.error('Error uploading image:', error);
-      setUploadError(error instanceof Error ? error.message : 'An unknown error occurred');
+      console.error('Error uploading image:', error)
+      setUploadError(error instanceof Error ? error.message : 'An unknown error occurred')
     }
-  };
+  }
 
   const handleArticleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     try {
-      const token = getToken();
+      const token = getToken()
       if (!token) {
-        throw new Error('No authentication token found');
+        throw new Error('No authentication token found')
       }
       const dataToSend = {
         ...articleFormData,
@@ -228,269 +232,483 @@ export const ProductManagement: React.FC = () => {
         price12: articleFormData.price12,
         price16: articleFormData.price16,
         offerPrice: articleFormData.offerPrice,
-      };
+      }
 
-      let url = '/api/articles';
-      let method = 'POST';
+      let url = '/api/articles'
+      let method = 'POST'
 
       if (currentArticle) {
-        url = `/api/articles?id=${currentArticle.id}`;
-        method = 'PATCH';
-        dataToSend.id = currentArticle.id;
+        url = `/api/articles?id=${currentArticle.id}`
+        method = 'PATCH'
+        dataToSend.id = currentArticle.id
       }
 
       const response = await fetch(url, {
         method: method,
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(dataToSend),
-      });
+      })
 
-      if (!response.ok) throw new Error('Error al guardar el artículo');
-      setIsArticleModalOpen(false);
-      fetchArticles();
+      if (!response.ok) throw new Error('Error al guardar el artículo')
+      setIsArticleModalOpen(false)
+      fetchArticles()
     } catch (error) {
-      console.error('Error saving article:', error);
-      setError(error instanceof Error ? error.message : 'Error saving article');
+      console.error('Error saving article:', error)
+      setError(error instanceof Error ? error.message : 'Error saving article')
     }
-  };
+  }
 
   const handleWarehouseSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     try {
-      const token = getToken();
+      const token = getToken()
       if (!token) {
-        throw new Error('No authentication token found');
+        throw new Error('No authentication token found')
       }
-      const url = currentWarehouse ? `/api/warehouses/${currentWarehouse.id}` : '/api/warehouses';
-      const method = currentWarehouse ? 'PUT' : 'POST';
+      const url = currentWarehouse ? `/api/warehouses/${currentWarehouse.id}` : '/api/warehouses'
+      const method = currentWarehouse ? 'PUT' : 'POST'
       const response = await fetch(url, {
         method: method,
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(warehouseFormData),
-      });
-      if (!response.ok) throw new Error('Error al guardar la bodega');
-      setIsWarehouseModalOpen(false);
-      fetchWarehouses();
+      })
+      if (!response.ok) throw new Error('Error al guardar la bodega')
+      setIsWarehouseModalOpen(false)
+      fetchWarehouses()
     } catch (error) {
-      console.error('Error saving warehouse:', error);
-      setError(error instanceof Error ? error.message : 'Error saving warehouse');
+      console.error('Error saving warehouse:', error)
+      setError(error instanceof Error ? error.message : 'Error saving warehouse')
     }
-  };
+  }
 
   const handleDeleteArticle = async (id: number) => {
     try {
-      const token = getToken();
+      const token = getToken()
       if (!token) {
-        throw new Error('No authentication token found');
+        throw new Error('No authentication token found')
       }
       const response = await fetch(`/api/articles?id=${id}`, {
         method: 'DELETE',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-      });
-      if (!response.ok) throw new Error('Error al eliminar el artículo');
-      fetchArticles();
+      })
+      if (!response.ok) throw new Error('Error al eliminar el artículo')
+      fetchArticles()
     } catch (error) {
-      console.error('Error deleting article:', error);
-      setError(error instanceof Error ? error.message : 'Error deleting article');
+      console.error('Error deleting article:', error)
+      setError(error instanceof Error ? error.message : 'Error deleting article')
     }
-  };
-
-  const handleDeleteCategory = async (id: number) => {
-    try {
-      const token = getToken();
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-      const response = await fetch(`/api/categories/${id}`, { 
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      if (!response.ok) throw new Error('Error al eliminar la categoría');
-      fetchCategories();
-    } catch (error) {
-      console.error('Error deleting category:', error);
-      setError(error instanceof Error ? error.message : 'Error deleting category');
-    }
-  };
+  }
 
   const handleDeleteWarehouse = async (id: number) => {
     try {
-      const token = getToken();
+      const token = getToken()
       if (!token) {
-        throw new Error('No authentication token found');
+        throw new Error('No authentication token found')
       }
-      const response = await fetch(`/api/warehouses/${id}`, { 
+      const response = await fetch(`/api/warehouses/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
         }
-      });
-      if (!response.ok) throw new Error('Error al eliminar la bodega');
-      fetchWarehouses();
+      })
+      if (!response.ok) throw new Error('Error al eliminar la bodega')
+      fetchWarehouses()
     } catch (error) {
-      console.error('Error deleting warehouse:', error);
-      setError(error instanceof Error ? error.message : 'Error deleting warehouse');
+      console.error('Error deleting warehouse:', error)
+      setError(error instanceof Error ? error.message : 'Error deleting warehouse')
     }
-  };
+  }
 
   return (
-    <div>
-      <h2>Gestión de Artículos y Bodegas</h2>
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-      <Button onClick={() => { setCurrentArticle(null); setIsArticleModalOpen(true); }}>Añadir Artículo</Button>
-      <Button onClick={() => { setCurrentWarehouse(null); setIsWarehouseModalOpen(true); }}>Añadir Bodega</Button>
+    <div className="container mx-auto px-4 py-8">
+      <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-8 text-green-600 dark:text-green-400">
+        Gestión de Artículos y Bodegas
+      </h2>
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+      <div className="flex space-x-4 mb-8">
+        <button
+          onClick={() => { setCurrentArticle(null); setIsArticleModalOpen(true); }}
+          className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+        >
+          <Plus className="mr-2 h-4 w-4" /> Añadir Artículo
+        </button>
+        <button
+          onClick={() => { setCurrentWarehouse(null); setIsWarehouseModalOpen(true); }}
+          className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+        >
+          <Plus className="mr-2 h-4 w-4" /> Añadir Bodega
+        </button>
+      </div>
 
-      <h3>Artículos</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Precio</th>
-            <th>Categoría</th>
-            <th>Bodega</th>
-            <th>Marca</th>
-            <th>Imagen</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {articles.map((article) => (
-            <tr key={article.id}>
-              <td>{article.name}</td>
-              <td>{article.description}</td>
-              <td>{article.price}</td>
-              <td>{categories.find(c => c.id === article.categoryId)?.name}</td>
-              <td>{warehouses.find(w => w.id === article.warehouseId)?.name}</td>
-              <td>{article.brand}</td>
-              <td>
-                {article.imageUrl1 && (
-                  <CldImage
-                    width="100"
-                    height="100"
-                    src={article.imageUrl1}
-                    alt={article.name}
-                  />
-                )}
-              </td>
-              <td>
-                <Button onClick={() => { setCurrentArticle(article); setIsArticleModalOpen(true); }}>Editar</Button>
-                <Button onClick={() => handleDeleteArticle(article.id!)}>Eliminar</Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <h3>Bodegas</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          {warehouses.map((warehouse) => (
-            <tr key={warehouse.id}>
-              <td>{warehouse.name}</td>
-              <td>{warehouse.description}</td>
-              <td>
-                <Button onClick={() => { setCurrentWarehouse(warehouse); setIsWarehouseModalOpen(true); }}>Editar</Button>
-                <Button onClick={() => handleDeleteWarehouse(warehouse.id!)}>Eliminar</Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      <Modal isOpen={isArticleModalOpen} onClose={() => { setIsArticleModalOpen(false); setCurrentArticle(null); }}>
-        <form onSubmit={handleArticleSubmit}>
-          <Input name="name" value={articleFormData.name} onChange={handleArticleInputChange} label="Nombre" required />
-          <Input name="description" value={articleFormData.description} onChange={handleArticleInputChange} label="Descripción" required />
-          <Input name="price" type="number" value={articleFormData.price} onChange={handleArticleInputChange} label="Precio" required step="0.01" />
-          <Input name="brand" value={articleFormData.brand || ''} onChange={handleArticleInputChange} label="Marca" />
-          <Select
-            name="categoryId"
-            value={articleFormData.categoryId}
-            onChange={handleArticleInputChange}
-            label="Categoría"
-            options={categories.map(c => ({ value: c.id!, label: c.name }))}
-            required
-          />
-          <Select
-            name="warehouseId"
-            value={articleFormData.warehouseId}
-            onChange={handleArticleInputChange}
-            label="Bodega"
-            options={warehouses.map(w => ({ value: w.id!, label: w.name }))}
-            required
-          />
-          <Input name="camera" value={articleFormData.camera || ''} onChange={handleArticleInputChange} label="Cámara" />
-          <Input name="frontCamera" value={articleFormData.frontCamera || ''} onChange={handleArticleInputChange} label="Cámara Frontal" />
-          <Input name="ram" value={articleFormData.ram || ''} onChange={handleArticleInputChange} label="RAM" />
-          <Input name="storage" value={articleFormData.storage || ''} onChange={handleArticleInputChange} label="Almacenamiento" />
-          <Input name="processor" value={articleFormData.processor || ''} onChange={handleArticleInputChange} label="Procesador" />
-          <Input name="screenSize" value={articleFormData.screenSize || ''} onChange={handleArticleInputChange} label="Tamaño de Pantalla" />
-          <Input name="batteryCapacity" value={articleFormData.batteryCapacity || ''} onChange={handleArticleInputChange} label="Capacidad de Batería" />
-
-          {['imageUrl1', 'imageUrl2', 'imageUrl3', 'imageUrl4'].map((field, index) => (
-            <div key={field}>
-              <Input
-                name={field}
-                value={articleFormData[field as keyof Article] || ''}
-                onChange={handleArticleInputChange}
-                label={`URL de imagen ${index + 1}`}
-              />
-              <input
-                type="file"
-                onChange={(e) => handleImageUpload(e, field as keyof Article)}
-                accept="image/*"
-              />
-              {articleFormData[field as keyof Article] && (
-                <CldImage
-                  width="100"
-                  height="100"
-                  src={articleFormData[field as keyof Article] as string}
-                  alt={`Imagen ${index + 1}`}
+      {isArticleModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-4xl w-full max-h-screen overflow-y-auto m-4">
+            <h3 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
+              {currentArticle ? 'Editar Artículo' : 'Añadir Artículo'}
+            </h3>
+            <form onSubmit={handleArticleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-4">
+                <input
+                  name="name"
+                  value={articleFormData.name}
+                  onChange={handleArticleInputChange}
+                  placeholder="Nombre"
+                  required
+                  className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 />
-              )}
-            </div>
-          ))}
+                <textarea
+                  name="description"
+                  value={articleFormData.description}
+                  onChange={handleArticleInputChange}
+                  placeholder="Descripción"
+                  required
+                  className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  rows={3}
+                />
+                <input
+                  name="price"
+                  type="number"
+                  value={articleFormData.price}
+                  onChange={handleArticleInputChange}
+                  placeholder="Precio"
+                  required
+                  step="0.01"
+                  className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+                <input
+                  name="brand"
+                  value={articleFormData.brand || ''}
+                  onChange={handleArticleInputChange}
+                  placeholder="Marca"
+                  className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+                <select
+                  name="categoryId"
+                  value={articleFormData.categoryId}
+                  onChange={handleArticleInputChange}
+                  className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="">Selecciona una categoría</option>
+                  {categories.map(c => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+                <select
+                  name="warehouseId"
+                  value={articleFormData.warehouseId}
+                  onChange={handleArticleInputChange}
+                  className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  <option value="">Selecciona una bodega</option>
+                  {warehouses.map(w => (
+                    <option key={w.id} value={w.id}>{w.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-4">
+                <input
+                  name="camera"
+                  value={articleFormData.camera || ''}
+                  onChange={handleArticleInputChange}
+                  placeholder="Cámara"
+                  className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+                <input
+                  name="frontCamera"
+                  value={articleFormData.frontCamera || ''}
+                  onChange={handleArticleInputChange}
+                  placeholder="Cámara Frontal"
+                  className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+                <input
+                  name="ram"
+                  value={articleFormData.ram || ''}
+                  onChange={handleArticleInputChange}
+                  placeholder="RAM"
+                  className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+                <input
+                  name="storage"
+                  value={articleFormData.storage || ''}
+                  onChange={handleArticleInputChange}
+                  placeholder="Almacenamiento"
+                  className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+                <input
+                  name="processor"
+                  value={articleFormData.processor || ''}
+                  onChange={handleArticleInputChange}
+                  placeholder="Procesador"
+                  className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+                <input
+                  name="screenSize"
+                  value={articleFormData.screenSize || ''}
+                  onChange={handleArticleInputChange}
+                  placeholder="Tamaño de Pantalla"
+                  className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div className="col-span-1 md:col-span-2 space-y-4">
+                <input
+                  name="batteryCapacity"
+                  value={articleFormData.batteryCapacity || ''}
+                  onChange={handleArticleInputChange}
+                  placeholder="Capacidad de Batería"
+                  className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+                {['imageUrl1', 'imageUrl2', 'imageUrl3', 'imageUrl4'].map((field, index) => (
+                  <div key={field} className="space-y-2">
+                    <input
+                      name={field}
+                      value={articleFormData[field as keyof Article] || ''}
+                      onChange={handleArticleInputChange}
+                      placeholder={`URL de imagen ${index + 1}`}
+                      className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                    <input
+                      type="file"
+                      onChange={(e) => handleImageUpload(e, field as keyof Article)}
+                      accept="image/*"
+                      className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                    />
+                    {articleFormData[field as keyof Article] && (
+                      <CldImage
+                        width="100"
+                        height="100"
+                        src={articleFormData[field as keyof Article] as string}
+                        alt={`Imagen ${index + 1}`}
+                        className="mt-2 rounded-md"
+                      />
+                    )}
+                  </div>
+                ))}
+                {uploadError && <p className="text-red-500 dark:text-red-400">{uploadError}</p>}
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    name="Initial"
+                    type="number"
+                    value={articleFormData.Initial || ''}
+                    onChange={handleArticleInputChange}
+                    placeholder="Inicial"
+                    step="0.01"
+                    className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                  <input
+                    name="price8"
+                    type="number"
+                    value={articleFormData.price8 || ''}
+                    onChange={handleArticleInputChange}
+                    placeholder="Precio 8 meses"
+                    step="0.01"
+                    className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                  <input
+                    name="price12"
+                    type="number"
+                    value={articleFormData.price12 || ''}
+                    onChange={handleArticleInputChange}
+                    placeholder="Precio 12 meses"
+                    step="0.01"
+                    className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                  <input
+                    name="price16"
+                    type="number"
+                    value={articleFormData.price16 || ''}
+                    onChange={handleArticleInputChange}
+                    placeholder="Precio 16 meses"
+                    step="0.01"
+                    className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <input
+                  name="financialEntity"
+                  value={articleFormData.financialEntity || ''}
+                  onChange={handleArticleInputChange}
+                  placeholder="Entidad Financiera"
+                  className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+                <input
+                  name="offerPrice"
+                  type="number"
+                  value={articleFormData.offerPrice || ''}
+                  onChange={handleArticleInputChange}
+                  placeholder="Precio de Oferta"
+                  step="0.01"
+                  className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div className="col-span-1 md:col-span-2 flex justify-end space-x-4 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setIsArticleModalOpen(false)}
+                  className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                >
+                  {currentArticle ? 'Actualizar' : 'Crear'} Artículo
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
-          {uploadError && <p style={{ color: 'red' }}>{uploadError}</p>}
+      {isWarehouseModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md w-full">
+            <h3 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
+              {currentWarehouse ? 'Editar Bodega' : 'Añadir Bodega'}
+            </h3>
+            <form onSubmit={handleWarehouseSubmit} className="space-y-4">
+              <input
+                name="name"
+                value={warehouseFormData.name}
+                onChange={handleWarehouseInputChange}
+                placeholder="Nombre de la bodega"
+                required
+                className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              />
+              <textarea
+                name="description"
+                value={warehouseFormData.description || ''}
+                onChange={handleWarehouseInputChange}
+                placeholder="Descripción de la bodega"
+                className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                rows={3}
+              />
+              <div className="flex justify-end space-x-4 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setIsWarehouseModalOpen(false)}
+                  className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-white rounded hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                >
+                  {currentWarehouse ? 'Actualizar' : 'Crear'} Bodega
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
-          <Input name="Initial" type="number" value={articleFormData.Initial || ''} onChange={handleArticleInputChange} label="Inicial" step="0.01" />
-          <Input name="price8" type="number" value={articleFormData.price8 || ''} onChange={handleArticleInputChange} label="Precio 8 meses" step="0.01" />
-          <Input name="price12" type="number" value={articleFormData.price12 || ''} onChange={handleArticleInputChange} label="Precio 12 meses" step="0.01" />
-          <Input name="price16" type="number" value={articleFormData.price16 || ''} onChange={handleArticleInputChange} label="Precio 16 meses" step="0.01" />
-          <Input name="financialEntity" value={articleFormData.financialEntity || ''} onChange={handleArticleInputChange} label="Entidad Financiera" />
-          <Input name="offerPrice" type="number" value={articleFormData.offerPrice || ''} onChange={handleArticleInputChange} label="Precio de Oferta" step="0.01" />
-          <Button type="submit">{currentArticle ? 'Actualizar' : 'Crear'} Artículo</Button>
-        </form>
-      </Modal>
+      <div className="space-y-8">
+        <div>
+          <h3 className="text-2xl font-bold mb-4 text-green-600 dark:text-green-400">Artículos</h3>
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white dark:bg-gray-800">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nombre</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Precio</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Categoría</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Bodega</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Marca</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Imagen</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {articles.map((article) => (
+                  <tr key={article.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">{article.name}</td>
 
-      <Modal isOpen={isWarehouseModalOpen} onClose={() => { setIsWarehouseModalOpen(false); setCurrentWarehouse(null); }}>
-        <form onSubmit={handleWarehouseSubmit}>
-          <Input name="name" value={warehouseFormData.name} onChange={handleWarehouseInputChange} label="Nombre de la bodega" required />
-          <Input name="description" value={warehouseFormData.description || ''} onChange={handleWarehouseInputChange} label="Descripción de la bodega" />
-          <Button type="submit">{currentWarehouse ? 'Actualizar' : 'Crear'} Bodega</Button>
-        </form>
-      </Modal>
+                    <td className="px-6 py-4 whitespace-nowrap">{article.price}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{categories.find(c => c.id === article.categoryId)?.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{warehouses.find(w => w.id === article.warehouseId)?.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{article.brand}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {article.imageUrl1 && (
+                        <CldImage
+                          width="100"
+                          height="100"
+                          src={article.imageUrl1}
+                          alt={article.name}
+                          className="rounded-md"
+                        />
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => { setCurrentArticle(article); setIsArticleModalOpen(true); }}
+                          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteArticle(article.id!)}
+                          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="text-2xl font-bold mb-4 text-green-600 dark:text-green-400">Bodegas</h3>
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white dark:bg-gray-800">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nombre</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Descripción</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                {warehouses.map((warehouse) => (
+                  <tr key={warehouse.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">{warehouse.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{warehouse.description}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => { setCurrentWarehouse(warehouse); setIsWarehouseModalOpen(true); }}
+                          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteWarehouse(warehouse.id!)}
+                          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
-  );
-};
-
-export default ProductManagement;
+  )
+}
