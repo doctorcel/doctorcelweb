@@ -14,14 +14,22 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, address, phone, email, taxId } = await request.json()
+    const { name, address, phone, email, taxId, logoUrl, documentType, documentNumber, regime, city, department, country, website } = await request.json()
     const newCompanyInfo = await prisma.companyInfo.create({
       data: { 
         name,
         address,
         phone,
         email,
-        taxId
+        taxId,
+        logoUrl,
+        documentType,
+        documentNumber,
+        regime,
+        city,
+        department,
+        country,
+        website
       }
     })
     return NextResponse.json(newCompanyInfo, { status: 201 })

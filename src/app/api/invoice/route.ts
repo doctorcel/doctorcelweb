@@ -20,11 +20,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const newInvoice = await prisma.invoice.create({
       data: { 
-        number: body.number,
         total: parseFloat(body.total),
         clientId: parseInt(body.clientId),
         companyInfoId: parseInt(body.companyInfoId),
-        warehouseId: parseInt(body.warehouseId), // Nuevo campo requerido
+        warehouseId: parseInt(body.warehouseId),
         clientName: body.clientName,
         clientAddress: body.clientAddress,
         clientPhone: body.clientPhone,
@@ -35,7 +34,8 @@ export async function POST(request: NextRequest) {
             articleId: parseInt(item.articleId),
             quantity: parseInt(item.quantity),
             price: parseFloat(item.price),
-            subtotal: parseFloat(item.subtotal)
+            subtotal: parseFloat(item.subtotal),
+            discount: item.discount ? parseFloat(item.discount) : 0
           }))
         }
       },
@@ -61,7 +61,6 @@ export async function PATCH(request: NextRequest) {
     const updatedInvoice = await prisma.invoice.update({
       where: { id: parseInt(id) },
       data: {
-        number: updateData.number,
         total: updateData.total ? parseFloat(updateData.total) : undefined,
         clientId: updateData.clientId ? parseInt(updateData.clientId) : undefined,
         companyInfoId: updateData.companyInfoId ? parseInt(updateData.companyInfoId) : undefined,
@@ -77,7 +76,8 @@ export async function PATCH(request: NextRequest) {
             articleId: parseInt(item.articleId),
             quantity: parseInt(item.quantity),
             price: parseFloat(item.price),
-            subtotal: parseFloat(item.subtotal)
+            subtotal: parseFloat(item.subtotal),
+            discount: item.discount ? parseFloat(item.discount) : 0
           }))
         } : undefined
       },

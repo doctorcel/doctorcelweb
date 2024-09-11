@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
         description: body.description,
         price: parseFloat(body.price),
         categoryId: parseInt(body.categoryId),
-        warehouseId: parseInt(body.warehouseId), // Nuevo campo requerido
+        warehouseId: parseInt(body.warehouseId),
         camera: body.camera,
         ram: body.ram,
         storage: body.storage,
@@ -33,10 +33,16 @@ export async function POST(request: NextRequest) {
         imageUrl2: body.imageUrl2,
         imageUrl3: body.imageUrl3,
         imageUrl4: body.imageUrl4,
-        price4Months: body.price4Months ? parseFloat(body.price4Months) : null,
-        price8Months: body.price8Months ? parseFloat(body.price8Months) : null,
-        price12Months: body.price12Months ? parseFloat(body.price12Months) : null,
-        price16Months: body.price16Months ? parseFloat(body.price16Months) : null,
+        price12: body.price12 ? parseFloat(body.price12) : null,
+        price16: body.price16 ? parseFloat(body.price16) : null,
+        Initial: body.Initial ? parseFloat(body.Initial) : null,
+        price8: body.price8 ? parseFloat(body.price8) : null,
+        brand: body.brand,
+        frontCamera: body.frontCamera,
+        screenSize: body.screenSize,
+        batteryCapacity: body.batteryCapacity,
+        financialEntity: body.financialEntity,
+        offerPrice: body.offerPrice ? parseFloat(body.offerPrice) : null,
       }
     });
     return NextResponse.json(newArticle, { status: 201 });
@@ -63,7 +69,7 @@ export async function PATCH(request: NextRequest) {
         description: updateData.description,
         price: updateData.price ? parseFloat(updateData.price) : undefined,
         categoryId: updateData.categoryId ? parseInt(updateData.categoryId) : undefined,
-        warehouseId: updateData.warehouseId ? parseInt(updateData.warehouseId) : undefined, // Nuevo campo
+        warehouseId: updateData.warehouseId ? parseInt(updateData.warehouseId) : undefined,
         camera: updateData.camera,
         ram: updateData.ram,
         storage: updateData.storage,
@@ -72,10 +78,16 @@ export async function PATCH(request: NextRequest) {
         imageUrl2: updateData.imageUrl2,
         imageUrl3: updateData.imageUrl3,
         imageUrl4: updateData.imageUrl4,
-        price4Months: updateData.price4Months ? parseFloat(updateData.price4Months) : null,
-        price8Months: updateData.price8Months ? parseFloat(updateData.price8Months) : null,
-        price12Months: updateData.price12Months ? parseFloat(updateData.price12Months) : null,
-        price16Months: updateData.price16Months ? parseFloat(updateData.price16Months) : null,
+        price12: updateData.price12 ? parseFloat(updateData.price12) : null,
+        price16: updateData.price16 ? parseFloat(updateData.price16) : null,
+        Initial: updateData.Initial ? parseFloat(updateData.Initial) : null,
+        price8: updateData.price8 ? parseFloat(updateData.price8) : null,
+        brand: updateData.brand,
+        frontCamera: updateData.frontCamera,
+        screenSize: updateData.screenSize,
+        batteryCapacity: updateData.batteryCapacity,
+        financialEntity: updateData.financialEntity,
+        offerPrice: updateData.offerPrice ? parseFloat(updateData.offerPrice) : null,
       },
     });
     return NextResponse.json(updatedArticle);
@@ -87,6 +99,8 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: 'Error updating article' }, { status: 500 });
   }
 }
+
+// DELETE function remains the same
 
 export async function DELETE(request: NextRequest) {
   try {
