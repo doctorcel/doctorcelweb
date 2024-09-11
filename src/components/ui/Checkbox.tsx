@@ -1,45 +1,41 @@
-// components/ui/checkbox.tsx
 import * as React from "react"
+import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
+import { Check } from "lucide-react"
 
-interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
-  label?: string;
-  onCheckedChange?: (checked: boolean) => void;
-}
+import { cn } from "@/lib/utils"
 
-export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
-  ({ label, className, onCheckedChange, ...props }, ref) => {
-    const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      onCheckedChange?.(event.target.checked);
-    };
-
-    return (
-      <div className="flex items-center">
-        <input
-          type="checkbox"
-          className="sr-only"
-          ref={ref}
-          onChange={handleChange}
-          {...props}
-        />
-        <div 
-          className={`w-5 h-5 border-2 border-gray-300 rounded flex items-center justify-center ${
-            props.checked ? 'bg-blue-500 border-blue-500' : 'bg-white'
-          } ${className}`}
-        >
-          {props.checked && (
-            <svg className="w-3 h-3 text-white fill-current" viewBox="0 0 20 20">
-              <path d="M0 11l2-2 5 5L18 3l2 2L7 18z" />
-            </svg>
-          )}
-        </div>
-        {label && (
-          <label htmlFor={props.id} className="ml-2 text-sm text-gray-700">
-            {label}
-          </label>
-        )}
-      </div>
-    );
+const Checkbox = React.forwardRef<
+  React.ElementRef<typeof CheckboxPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>
+>(({ className, ...props }, ref) => {
+  
+  // Usar ref directamente sin memoización
+  const setRef = (element: any) => {
+    if (typeof ref === 'function') {
+      ref(element)
+    } else if (ref) {
+      (ref as React.MutableRefObject<any>).current = element
+    }
   }
-);
 
-Checkbox.displayName = "Checkbox";
+  return (
+    <CheckboxPrimitive.Root
+      ref={setRef}
+      className={cn(
+        "peer h-4 w-4 shrink-0 rounded-sm border border-primary ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
+        className
+      )}
+      {...props}
+    >
+      <CheckboxPrimitive.Indicator
+        className={cn("flex items-center justify-center text-current")}
+      >
+        <Check className="h-4 w-4" />
+      </CheckboxPrimitive.Indicator>
+    </CheckboxPrimitive.Root>
+  )
+})
+
+Checkbox.displayName = CheckboxPrimitive.Root.displayName
+
+export { Checkbox }

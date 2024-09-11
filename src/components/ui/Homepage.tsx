@@ -4,32 +4,33 @@ import * as React from "react"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight, User, Menu } from "lucide-react"
 import { Button } from "@/components/ui/Button"
-import CategoryMenu from './CategoryMenu'
 import SearchBar from './SearchBar'
 import ArticleCard from './ArticleCard'
 import SkeletonCard from './SkeletonCard'
 import FilterMenu from './FilterMenu'
-import { useCategories } from '@/hooks/useCategories'
 import { useArticles } from '@/hooks/useArticles'
 import FloatingThemeToggle from '@/components/ui/DarkModeButton'
 import FloatingWhatsAppButton from "./FloatingWhatsappButton"
+import { Article } from '@/types'
+
+const CELLPHONES_CATEGORY_ID = 2; // Asumimos que este es el ID de la categoría de celulares
 
 export default function TechStoreHomepage() {
     const [currentSlide, setCurrentSlide] = React.useState(0)
     const [isMenuOpen, setIsMenuOpen] = React.useState(false)
     const totalSlides = 5
-    const { categories } = useCategories()
     const { articles, isLoading, error } = useArticles()
-    const [filteredArticles, setFilteredArticles] = React.useState(articles)
+    const [filteredArticles, setFilteredArticles] = React.useState<Article[]>([])
     const [mounted, setMounted] = React.useState(false)
+    const [activeFilters, setActiveFilters] = React.useState<Record<string, Record<string, boolean>>>({})
 
     React.useEffect(() => {
         setMounted(true);
     }, []);
 
     React.useEffect(() => {
-        setFilteredArticles(articles)
-    }, [articles])
+        applyFilters(activeFilters);
+    }, [articles, activeFilters])
 
     const nextSlide = () => {
         setCurrentSlide((prev) => (prev + 1) % totalSlides)
@@ -39,71 +40,26 @@ export default function TechStoreHomepage() {
         setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides)
     }
 
-    const handleFilterChange = (category: string, value: string, checked: boolean) => {
-        if (checked) {
-            setFilteredArticles(articles.filter(article => {
-                switch (category) {
-                    case 'Marca':
-                        return article.brand === value;
-                    case 'RAM':
-                        return article.ram === value;
-                    case 'Almacenamiento':
-                        return article.storage === value;
-                    case 'Cámara':
-                        return article.camera === value;
-                    default:
-                        return true;
-                }
-            }));
-        } else {
-            setFilteredArticles(articles);
-        }
-    }
+    const applyFilters = (filters: Record<string, Record<string, boolean>>) => {
+        const newFilteredArticles = articles.filter(article => {
+            if (article.categoryId !== CELLPHONES_CATEGORY_ID) return false;
 
-    const handleSearch = (query: string) => {
-        const lowercaseQuery = query.toLowerCase()
-        setFilteredArticles(
-            articles.filter(article =>
-                article.name.toLowerCase().includes(lowercaseQuery) ||
-                article.description.toLowerCase().includes(lowercaseQuery)
-            )
-        )
-    }
+            return Object.entries(filters).every(([category, options]) => {
+                // If no option is selected for this category, don't filter on this category
+                if (Object.values(options).every(value => !value)) return true;
+                
+                // Check if the article matches any of the selected options for this category
+                const articleValue = String(article[category as keyof Article]);
+                return options[articleValue] === true;
+            });
+        });
 
-    const filters = [
-        {
-            name: 'Marca',
-            options: [
-                { label: 'Samsung', value: 'samsung' },
-                { label: 'Apple', value: 'apple' },
-                { label: 'Xiaomi', value: 'xiaomi' },
-            ]
-        },
-        {
-            name: 'RAM',
-            options: [
-                { label: '4GB', value: '4gb' },
-                { label: '6GB', value: '6gb' },
-                { label: '8GB', value: '8gb' },
-            ]
-        },
-        {
-            name: 'Almacenamiento',
-            options: [
-                { label: '64GB', value: '64gb' },
-                { label: '128GB', value: '128gb' },
-                { label: '256GB', value: '256gb' },
-            ]
-        },
-        {
-            name: 'Cámara',
-            options: [
-                { label: '12MP', value: '12mp' },
-                { label: '48MP', value: '48mp' },
-                { label: 'Triple, 108mp + 2mp + 2mp', value: 'Triple, 108mp + 2mp + 2mp' },
-            ]
-        },
-    ];
+        setFilteredArticles(newFilteredArticles);
+    };
+
+    const handleApplyFilters = (filters: Record<string, Record<string, boolean>>) => {
+        setActiveFilters(filters);
+    };
 
     const renderCards = () => {
         if (isLoading) {
@@ -208,11 +164,11 @@ export default function TechStoreHomepage() {
                 <section className="w-full py-12 md:py-24 lg:py-32 bg-white dark:bg-gray-800 transition-colors duration-300">
                     <div className="container px-4 md:px-6">
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-8 text-green-600 dark:text-green-400">
-                            Encuentra tu nuevo Smarthphone
+                            Encuentra tu nuevo Smartphone
                         </h2>
                         <div className="flex flex-col md:flex-row">
                             <div className="w-full md:w-1/4 pr-0 md:pr-4 mb-6 md:mb-0">
-                                <FilterMenu filters={filters} onFilterChange={handleFilterChange} />
+                                <FilterMenu articles={articles.filter(article => article.categoryId === CELLPHONES_CATEGORY_ID)} onApplyFilters={handleApplyFilters} />
                             </div>
                             <div className="w-full md:w-3/4">
                                 <div className="flex justify-between items-center mb-4">
@@ -237,6 +193,8 @@ export default function TechStoreHomepage() {
                 <p>&copy; 2024 Doctor Cel. Todos los derechos reservados.</p>
             </footer>
             <FloatingWhatsAppButton />
+            <FloatingThemeToggle />
         </div>
     )
 }
+
