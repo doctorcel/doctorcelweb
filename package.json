@@ -10,6 +10,11 @@
     "vercel-build": "prisma generate && prisma db push && next build"
   },
   "dependencies": {
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@heroicons/react": "^2.1.5",
+    "@mui/material": "^6.1.0",
+    "@mui/styled-engine-sc": "^6.1.0",
     "@prisma/client": "^5.19.1",
     "@radix-ui/react-dialog": "^1.1.1",
     "@radix-ui/react-slot": "^1.1.0",
@@ -23,11 +28,13 @@
     "next": "^14.2.8",
     "next-cloudinary": "^6.12.0",
     "next-swagger-doc": "^0.4.0",
+    "next-themes": "^0.3.0",
     "openssl": "^2.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.0",
     "sass": "^1.78.0",
+    "styled-components": "^6.1.13",
     "swagger-ui-react": "^5.17.14",
     "tailwind-merge": "^2.5.2",
     "vercel": "^37.4.0"
