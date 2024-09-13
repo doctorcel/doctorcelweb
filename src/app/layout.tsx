@@ -10,7 +10,7 @@ const onest = Onest({ weight: "400", subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: 'Doctor Cel',
-  description: 'Tu tienda de celulares y accesorios',
+  description: 'Tu tienda de celulares, accesorios y servicio tecnico especializado.',
 };
 
 export default function RootLayout({
