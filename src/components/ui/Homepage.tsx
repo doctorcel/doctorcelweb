@@ -12,17 +12,19 @@ import { useArticles } from '@/hooks/useArticles'
 import FloatingThemeToggle from '@/components/ui/DarkModeButton'
 import FloatingWhatsAppButton from "./FloatingWhatsappButton"
 import { Article } from '@/types'
+import { motion, AnimatePresence } from "framer-motion"
 
-const CELLPHONES_CATEGORY_ID = 2; // Asumimos que este es el ID de la categoría de celulares
+const CELLPHONES_CATEGORY_ID = 2;
+const ITEMS_PER_PAGE = 6;
 
-export default function TechStoreHomepage() {
+export default function Homepage() {
     const [currentSlide, setCurrentSlide] = React.useState(0)
     const [isMenuOpen, setIsMenuOpen] = React.useState(false)
-    const totalSlides = 5
     const { articles, isLoading, error } = useArticles()
     const [filteredArticles, setFilteredArticles] = React.useState<Article[]>([])
     const [mounted, setMounted] = React.useState(false)
     const [activeFilters, setActiveFilters] = React.useState<Record<string, Record<string, boolean>>>({})
+    const [direction, setDirection] = React.useState(0)
 
     React.useEffect(() => {
         setMounted(true);
@@ -32,11 +34,15 @@ export default function TechStoreHomepage() {
         applyFilters(activeFilters);
     }, [articles, activeFilters])
 
+    const totalSlides = Math.ceil(filteredArticles.length / ITEMS_PER_PAGE);
+
     const nextSlide = () => {
+        setDirection(1)
         setCurrentSlide((prev) => (prev + 1) % totalSlides)
     }
 
     const prevSlide = () => {
+        setDirection(-1)
         setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides)
     }
 
@@ -45,16 +51,15 @@ export default function TechStoreHomepage() {
             if (article.categoryId !== CELLPHONES_CATEGORY_ID) return false;
 
             return Object.entries(filters).every(([category, options]) => {
-                // If no option is selected for this category, don't filter on this category
                 if (Object.values(options).every(value => !value)) return true;
                 
-                // Check if the article matches any of the selected options for this category
                 const articleValue = String(article[category as keyof Article]);
                 return options[articleValue] === true;
             });
         });
 
         setFilteredArticles(newFilteredArticles);
+        setCurrentSlide(0); // Reset to first slide when filters change
     };
 
     const handleApplyFilters = (filters: Record<string, Record<string, boolean>>) => {
@@ -63,13 +68,35 @@ export default function TechStoreHomepage() {
 
     const renderCards = () => {
         if (isLoading) {
-            return [...Array(6)].map((_, index) => (
+            return [...Array(ITEMS_PER_PAGE)].map((_, index) => (
                 <SkeletonCard key={`skeleton-${index}`} />
             ))
         }
-        return filteredArticles.slice(currentSlide * 6, (currentSlide + 1) * 6).map((article) => (
-            <ArticleCard key={article.id} article={article} />
-        ))
+        const startIndex = currentSlide * ITEMS_PER_PAGE;
+        const visibleArticles = filteredArticles.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+        return (
+            <AnimatePresence initial={false} mode="wait">
+                <motion.div
+                    key={currentSlide}
+                    initial={{ opacity: 0, x: direction > 0 ? 20 : -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: direction > 0 ? -20 : 20 }}
+                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                >
+                    {visibleArticles.map((article, index) => (
+                        <motion.div
+                            key={article.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, delay: index * 0.1 }}
+                        >
+                            <ArticleCard article={article} />
+                        </motion.div>
+                    ))}
+                </motion.div>
+            </AnimatePresence>
+        )
     }
 
     if (!mounted) return null
@@ -161,7 +188,7 @@ export default function TechStoreHomepage() {
                         </div>
                     </div>
                 </section>
-                <section className="w-full py-12 md:py-24 lg:py-32 bg-white dark:bg-gray-800 transition-colors duration-300">
+                <section className="flex justify-center w-full py-12 md:py-24 lg:py-32 bg-white dark:bg-gray-800 transition-colors duration-300">
                     <div className="container px-4 md:px-6">
                         <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-8 text-green-600 dark:text-green-400">
                             Encuentra tu nuevo Smartphone
@@ -171,19 +198,39 @@ export default function TechStoreHomepage() {
                                 <FilterMenu articles={articles.filter(article => article.categoryId === CELLPHONES_CATEGORY_ID)} onApplyFilters={handleApplyFilters} />
                             </div>
                             <div className="w-full md:w-3/4">
-                                <div className="flex justify-between items-center mb-4">
-                                    <div className="flex items-center space-x-2">
-                                        <Button variant="outline" size="icon" onClick={prevSlide} className="bg-white dark:bg-gray-700 text-green-600 dark:text-green-400 border-green-600 dark:border-green-400 hover:bg-green-50 dark:hover:bg-green-900">
-                                            <ChevronLeft className="h-4 w-4" />
-                                        </Button>
-                                        <Button variant="outline" size="icon" onClick={nextSlide} className="bg-white dark:bg-gray-700 text-green-600 dark:text-green-400 border-green-600 dark:border-green-400 hover:bg-green-50 dark:hover:bg-green-900">
-                                            <ChevronRight className="h-4 w-4" />
-                                        </Button>
+                                {filteredArticles.length > 0 ? (
+                                    <>
+                                        <div className="flex justify-between items-center mb-4">
+                                            <div className="flex items-center space-x-2">
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="icon" 
+                                                    onClick={prevSlide} 
+                                                    className="bg-white dark:bg-gray-700 text-green-600 dark:text-green-400 border-green-600 dark:border-green-400 hover:bg-green-50 dark:hover:bg-green-900"
+                                                    disabled={totalSlides <= 1}
+                                                >
+                                                    <ChevronLeft className="h-4 w-4" />
+                                                </Button>
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="icon" 
+                                                    onClick={nextSlide} 
+                                                    className="bg-white dark:bg-gray-700 text-green-600 dark:text-green-400 border-green-600 dark:border-green-400 hover:bg-green-50 dark:hover:bg-green-900"
+                                                    disabled={totalSlides <= 1}
+                                                >
+                                                    <ChevronRight className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                        <div className="overflow-hidden">
+                                            {renderCards()}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="text-center py-12">
+                                        <p className="text-xl text-gray-600 dark:text-gray-400">No se encontraron resultados para los filtros seleccionados.</p>
                                     </div>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    {renderCards()}
-                                </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -197,4 +244,3 @@ export default function TechStoreHomepage() {
         </div>
     )
 }
-
