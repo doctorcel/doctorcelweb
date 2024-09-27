@@ -25,6 +25,13 @@ const PatronDesbloqueo: React.FC<PatronDesbloqueoProps> = ({ onPatronCompleto })
         dibujarPuntos();
       }
     }
+
+    const preventDefault = (e: Event) => e.preventDefault();
+    document.body.addEventListener('touchmove', preventDefault, { passive: false });
+
+    return () => {
+      document.body.removeEventListener('touchmove', preventDefault);
+    };
   }, []);
 
   const dibujarPuntos = (): void => {
@@ -93,7 +100,12 @@ const PatronDesbloqueo: React.FC<PatronDesbloqueoProps> = ({ onPatronCompleto })
     }
   };
 
-  const manejarFin = (): void => {
+  const manejarFin = (e: React.TouchEvent<HTMLCanvasElement> | React.MouseEvent<HTMLCanvasElement>): void => {
+    e.preventDefault();
+    finalizarPatron();
+  };
+
+  const finalizarPatron = (): void => {
     if (patron.length > 1) {
       setDibujando(false);
       const patronNumerico = convertirPatronANumeros(patron);
@@ -155,11 +167,11 @@ const PatronDesbloqueo: React.FC<PatronDesbloqueoProps> = ({ onPatronCompleto })
         onTouchStart={manejarInicio}
         onTouchMove={manejarMovimiento}
         onTouchEnd={manejarFin}
-        className="border border-gray-300 rounded-lg cursor-pointer"
+        className="border border-gray-300 rounded-lg cursor-pointer touch-none"
       />
       <div className="mt-4 space-x-4">
         <button 
-          onClick={manejarFin} 
+          onClick={finalizarPatron} 
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-blue-300"
           disabled={patron.length <= 1}
         >
