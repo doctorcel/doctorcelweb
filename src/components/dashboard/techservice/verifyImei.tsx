@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useZxing } from 'react-zxing';
 
 const ImeiScanner: React.FC = () => {
@@ -31,17 +31,15 @@ const ImeiScanner: React.FC = () => {
   }, []);
 
   const handleStartScan = async () => {
-    if (!hasPermission) {
-      try {
-        await navigator.mediaDevices.getUserMedia({ video: true });
-        setHasPermission(true);
-      } catch (err) {
-        console.error("Error accessing camera:", err);
-        return;
-      }
+    try {
+      await navigator.mediaDevices.getUserMedia({ video: true });
+      setHasPermission(true);
+      setIsScanning(true);
+      setImei('');
+    } catch (err) {
+      console.error("Error accessing camera:", err);
+      setHasPermission(false);
     }
-    setIsScanning(true);
-    setImei('');
   };
 
   const handleStopScan = () => {
@@ -58,10 +56,6 @@ const ImeiScanner: React.FC = () => {
     return <div>Solicitando permiso de cámara...</div>;
   }
 
-  if (hasPermission === false) {
-    return <div>No se pudo acceder a la cámara. Por favor, verifica los permisos del navegador.</div>;
-  }
-
   return (
     <div className="flex flex-col items-center space-y-4">
       <h2 className="text-2xl font-bold">Escáner de IMEI</h2>
@@ -71,7 +65,7 @@ const ImeiScanner: React.FC = () => {
         </div>
       ) : (
         <div className="w-full max-w-md h-48 bg-gray-200 flex items-center justify-center">
-          <p>Cámara desactivada</p>
+          <p>{hasPermission === false ? "No se pudo acceder a la cámara. Por favor, verifica los permisos del navegador." : "Cámara desactivada"}</p>
         </div>
       )}
       <div className="space-x-2">

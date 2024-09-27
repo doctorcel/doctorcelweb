@@ -42,37 +42,6 @@ const PatronDesbloqueo: React.FC<PatronDesbloqueoProps> = ({ onPatronCompleto })
     }
   };
 
-  const manejarClick = (e: React.MouseEvent<HTMLCanvasElement>): void => {
-    const punto = obtenerPuntoCercano(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
-    if (punto === null) return;
-
-    if (!dibujando) {
-      setPatron([punto]);
-      setDibujando(true);
-    } else {
-      if (!patron.includes(punto)) {
-        setPatron(prevPatron => [...prevPatron, punto]);
-      }
-    }
-  };
-
-  const terminarDibujo = (): void => {
-    if (patron.length > 1) {
-      setDibujando(false);
-      const patronNumerico = convertirPatronANumeros(patron);
-      console.log('Patrón numérico:', patronNumerico);
-      if (onPatronCompleto) {
-        onPatronCompleto(patronNumerico);
-      }
-    }
-  };
-
-  const reiniciarPatron = (): void => {
-    setPatron([]);
-    setDibujando(false);
-    dibujarPuntos();
-  };
-
   const obtenerPuntoCercano = (x: number, y: number): Punto | null => {
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 3; j++) {
@@ -91,12 +60,54 @@ const PatronDesbloqueo: React.FC<PatronDesbloqueoProps> = ({ onPatronCompleto })
     return patron.join('');
   };
 
-  const manejarMovimientoMouse = (e: React.MouseEvent<HTMLCanvasElement>): void => {
+  const manejarInicio = (e: React.TouchEvent<HTMLCanvasElement> | React.MouseEvent<HTMLCanvasElement>): void => {
+    e.preventDefault();
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = 'touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
+    const y = 'touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+
+    const punto = obtenerPuntoCercano(x, y);
+    if (punto === null) return;
+
+    setPatron([punto]);
+    setDibujando(true);
+  };
+
+  const manejarMovimiento = (e: React.TouchEvent<HTMLCanvasElement> | React.MouseEvent<HTMLCanvasElement>): void => {
+    e.preventDefault();
     if (!dibujando) return;
-    const punto = obtenerPuntoCercano(e.nativeEvent.offsetX, e.nativeEvent.offsetY);
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = 'touches' in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
+    const y = 'touches' in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+
+    const punto = obtenerPuntoCercano(x, y);
     if (punto !== null && !patron.includes(punto)) {
       setPatron(prevPatron => [...prevPatron, punto]);
     }
+  };
+
+  const manejarFin = (): void => {
+    if (patron.length > 1) {
+      setDibujando(false);
+      const patronNumerico = convertirPatronANumeros(patron);
+      console.log('Patrón numérico:', patronNumerico);
+      if (onPatronCompleto) {
+        onPatronCompleto(patronNumerico);
+      }
+    }
+  };
+
+  const reiniciarPatron = (): void => {
+    setPatron([]);
+    setDibujando(false);
+    dibujarPuntos();
   };
 
   useEffect(() => {
@@ -137,14 +148,18 @@ const PatronDesbloqueo: React.FC<PatronDesbloqueoProps> = ({ onPatronCompleto })
     <div className="flex flex-col items-center">
       <canvas
         ref={canvasRef}
-        onClick={manejarClick}
-        onMouseMove={manejarMovimientoMouse}
-        onMouseLeave={terminarDibujo}
+        onMouseDown={manejarInicio}
+        onMouseMove={manejarMovimiento}
+        onMouseUp={manejarFin}
+        onMouseLeave={manejarFin}
+        onTouchStart={manejarInicio}
+        onTouchMove={manejarMovimiento}
+        onTouchEnd={manejarFin}
         className="border border-gray-300 rounded-lg cursor-pointer"
       />
       <div className="mt-4 space-x-4">
         <button 
-          onClick={terminarDibujo} 
+          onClick={manejarFin} 
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-blue-300"
           disabled={patron.length <= 1}
         >
