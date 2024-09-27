@@ -1,11 +1,12 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useZxing } from 'react-zxing';
 
 const ImeiScanner: React.FC = () => {
   const [imei, setImei] = useState<string>('');
   const [isScanning, setIsScanning] = useState<boolean>(false);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
 
   const { ref } = useZxing({
     onDecodeResult(result) {
@@ -14,7 +15,31 @@ const ImeiScanner: React.FC = () => {
     },
   });
 
-  const handleStartScan = () => {
+  useEffect(() => {
+    const checkCameraPermission = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        setHasPermission(true);
+        stream.getTracks().forEach(track => track.stop());
+      } catch (err) {
+        setHasPermission(false);
+        console.error("Error accessing camera:", err);
+      }
+    };
+
+    checkCameraPermission();
+  }, []);
+
+  const handleStartScan = async () => {
+    if (!hasPermission) {
+      try {
+        await navigator.mediaDevices.getUserMedia({ video: true });
+        setHasPermission(true);
+      } catch (err) {
+        console.error("Error accessing camera:", err);
+        return;
+      }
+    }
     setIsScanning(true);
     setImei('');
   };
@@ -28,6 +53,14 @@ const ImeiScanner: React.FC = () => {
       window.open(`https://www.imeicolombia.com.co/imei/${imei}`, '_blank');
     }
   };
+
+  if (hasPermission === null) {
+    return <div>Solicitando permiso de cámara...</div>;
+  }
+
+  if (hasPermission === false) {
+    return <div>No se pudo acceder a la cámara. Por favor, verifica los permisos del navegador.</div>;
+  }
 
   return (
     <div className="flex flex-col items-center space-y-4">
