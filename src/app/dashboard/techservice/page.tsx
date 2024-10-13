@@ -1,11 +1,10 @@
-import PatronDesbloqueo from "@/components/dashboard/techservice/patron";
-import ImeiScanner from "@/components/dashboard/techservice/verifyImei";
+import TechServiceForm from "@/components/dashboard/techservice/techserviceform";
+
 
 export default function TechServiceMainPage(){
     return(
         <>
-        <PatronDesbloqueo/>
-        <ImeiScanner/>
+        <TechServiceForm/>
         </>
     )
 }

@@ -5,6 +5,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from 'next-themes';
 import '../app/globals.css'
 import FloatingThemeToggle from '@/components/ui/DarkModeButton';
+import 'sweetalert2/dist/sweetalert2.min.css';
 
 const onest = Onest({ weight: "400", subsets: ["latin"] })
 
