@@ -68,7 +68,7 @@ const PatronDesbloqueo: React.FC<PatronDesbloqueoProps> = ({ onPatronCompleto })
   };
 
   const manejarInicio = (e: React.TouchEvent<HTMLCanvasElement> | React.MouseEvent<HTMLCanvasElement>): void => {
-    e.preventDefault();
+    e.preventDefault(); // Prevenir el comportamiento predeterminado solo en el canvas
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -84,8 +84,8 @@ const PatronDesbloqueo: React.FC<PatronDesbloqueoProps> = ({ onPatronCompleto })
   };
 
   const manejarMovimiento = (e: React.TouchEvent<HTMLCanvasElement> | React.MouseEvent<HTMLCanvasElement>): void => {
-    e.preventDefault();
     if (!dibujando) return;
+    e.preventDefault(); // Prevenir el comportamiento predeterminado solo cuando se está dibujando
 
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -101,7 +101,7 @@ const PatronDesbloqueo: React.FC<PatronDesbloqueoProps> = ({ onPatronCompleto })
   };
 
   const manejarFin = (e: React.TouchEvent<HTMLCanvasElement> | React.MouseEvent<HTMLCanvasElement>): void => {
-    e.preventDefault();
+    e.preventDefault(); // Prevenir el comportamiento predeterminado solo en el canvas
     finalizarPatron();
   };
 

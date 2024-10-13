@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 import { CldImage } from 'next-cloudinary'
-import { Plus, Pencil, Trash2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, ArrowUp, ArrowDown } from 'lucide-react'
+import Swal from 'sweetalert2'
 
 interface Article {
   id?: number
@@ -63,6 +64,11 @@ export default function ProductManagement() {
   })
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(10)
+  const [sortField, setSortField] = useState<keyof Article>('name')
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     fetchArticles()
@@ -287,27 +293,6 @@ export default function ProductManagement() {
     }
   }
 
-  const handleDeleteArticle = async (id: number) => {
-    try {
-      const token = getToken()
-      if (!token) {
-        throw new Error('No authentication token found')
-      }
-      const response = await fetch(`/api/articles?id=${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-      })
-      if (!response.ok) throw new Error('Error al eliminar el artículo')
-      fetchArticles()
-    } catch (error) {
-      console.error('Error deleting article:', error)
-      setError(error instanceof Error ? error.message : 'Error deleting article')
-    }
-  }
-
   const handleDeleteWarehouse = async (id: number) => {
     try {
       const token = getToken()
@@ -327,9 +312,103 @@ export default function ProductManagement() {
       setError(error instanceof Error ? error.message : 'Error deleting warehouse')
     }
   }
+  const handleDeleteArticle = async (id: number) => {
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: "No podrás revertir esta acción!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, eliminar!',
+      cancelButtonText: 'Cancelar'
+    })
+
+    if (result.isConfirmed) {
+      try {
+        const token = getToken()
+        if (!token) {
+          throw new Error('No authentication token found')
+        }
+        const response = await fetch(`/api/articles?id=${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+        })
+        if (!response.ok) throw new Error('Error al eliminar el artículo')
+        fetchArticles()
+        Swal.fire(
+          'Eliminado!',
+          'El artículo ha sido eliminado.',
+          'success'
+        )
+      } catch (error) {
+        console.error('Error deleting article:', error)
+        setError(error instanceof Error ? error.message : 'Error deleting article')
+        Swal.fire(
+          'Error!',
+          'No se pudo eliminar el artículo.',
+          'error'
+        )
+      }
+    }
+  }
+
+  const handleSort = (field: keyof Article) => {
+    if (field === sortField) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortDirection('asc')
+    }
+  }
+
+  const filteredArticles = articles.filter(article =>
+    article.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    article.description.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  const sortedArticles = [...filteredArticles].sort((a, b) => {
+    const aValue = a[sortField];
+    const bValue = b[sortField];
+  
+    // Manejar casos donde los valores pueden ser undefined
+    if (aValue === undefined && bValue === undefined) return 0;
+    if (aValue === undefined) return sortDirection === 'asc' ? 1 : -1;
+    if (bValue === undefined) return sortDirection === 'asc' ? -1 : 1;
+  
+    // Comparación basada en el tipo de dato
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return sortDirection === 'asc' 
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
+    }
+  
+    if (typeof aValue === 'number' && typeof bValue === 'number') {
+      return sortDirection === 'asc' 
+        ? aValue - bValue
+        : bValue - aValue;
+    }
+  
+    // Para otros tipos de datos, convertir a string y comparar
+    const aString = String(aValue);
+    const bString = String(bValue);
+    
+    return sortDirection === 'asc'
+      ? aString.localeCompare(bString)
+      : bString.localeCompare(aString);
+  });
+
+  const indexOfLastItem = currentPage * itemsPerPage
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage
+  const currentArticles = sortedArticles.slice(indexOfFirstItem, indexOfLastItem)
+
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber)
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="w-full px-4 py-8">
       <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-8 text-green-600 dark:text-green-400">
         Gestión de Artículos y Bodegas
       </h2>
@@ -615,100 +694,132 @@ export default function ProductManagement() {
         <div>
           <h3 className="text-2xl font-bold mb-4 text-green-600 dark:text-green-400">Artículos</h3>
           <div className="overflow-x-auto">
-            <table className="min-w-full bg-white dark:bg-gray-800">
-              <thead className="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nombre</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Precio</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Categoría</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Bodega</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Marca</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Imagen</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {articles.map((article) => (
-                  <tr key={article.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">{article.name}</td>
+            <div className="space-y-8">
+              <div>
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    placeholder="Buscar artículos..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full bg-white dark:bg-gray-800">
+                    <thead className="bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th onClick={() => handleSort('name')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer">
+                          Nombre {sortField === 'name' && (sortDirection === 'asc' ? <ArrowUp className="inline h-4 w-4" /> : <ArrowDown className="inline h-4 w-4" />)}
+                        </th>
+                        <th onClick={() => handleSort('price')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer">
+                          Precio {sortField === 'price' && (sortDirection === 'asc' ? <ArrowUp className="inline h-4 w-4" /> : <ArrowDown className="inline h-4 w-4" />)}
+                        </th>
+                        <th onClick={() => handleSort('categoryId')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer">
+                          Categoría {sortField === 'categoryId' && (sortDirection === 'asc' ? <ArrowUp className="inline h-4 w-4" /> : <ArrowDown className="inline h-4 w-4" />)}
+                        </th>
+                        <th onClick={() => handleSort('brand')} className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer">
+                          Marca {sortField === 'brand' && (sortDirection === 'asc' ? <ArrowUp className="inline h-4 w-4" /> : <ArrowDown className="inline h-4 w-4" />)}
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Imagen</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                      {currentArticles.map((article) => (
+                        <tr key={article.id}>
+                          <td className="px-6 py-4 whitespace-nowrap">{article.name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap">{article.price}</td>
+                          <td className="px-6 py-4 whitespace-nowrap">{categories.find(c => c.id === article.categoryId)?.name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap">{article.brand}</td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {article.imageUrl1 && (
+                              <CldImage
+                                width="100"
+                                height="100"
+                                src={article.imageUrl1}
+                                alt={article.name}
+                                className="rounded-md"
+                              />
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => { setCurrentArticle(article); setIsArticleModalOpen(true); }}
+                                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteArticle(article.id!)}
+                                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="mt-4">
+                  {Array.from({ length: Math.ceil(sortedArticles.length / itemsPerPage) }, (_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => paginate(i + 1)}
+                      className={`mx-1 px-3 py-1 border rounded ${currentPage === i + 1 ? 'bg-green-500 text-white' : 'bg-white text-green-500'}`}
+                    >
+                      {i + 1}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
-                    <td className="px-6 py-4 whitespace-nowrap">{article.price}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{categories.find(c => c.id === article.categoryId)?.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{warehouses.find(w => w.id === article.warehouseId)?.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{article.brand}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {article.imageUrl1 && (
-                        <CldImage
-                          width="100"
-                          height="100"
-                          src={article.imageUrl1}
-                          alt={article.name}
-                          className="rounded-md"
-                        />
-                      )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => { setCurrentArticle(article); setIsArticleModalOpen(true); }}
-                          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteArticle(article.id!)}
-                          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
 
-        <div>
-          <h3 className="text-2xl font-bold mb-4 text-green-600 dark:text-green-400">Bodegas</h3>
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white dark:bg-gray-800">
-              <thead className="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nombre</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Descripción</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {warehouses.map((warehouse) => (
-                  <tr key={warehouse.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">{warehouse.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{warehouse.description}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => { setCurrentWarehouse(warehouse); setIsWarehouseModalOpen(true); }}
-                          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteWarehouse(warehouse.id!)}
-                          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              <div>
+                <h3 className="text-2xl font-bold mb-4 text-green-600 dark:text-green-400">Bodegas</h3>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full bg-white dark:bg-gray-800">
+                    <thead className="bg-gray-50 dark:bg-gray-700">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nombre</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Descripción</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                      {warehouses.map((warehouse) => (
+                        <tr key={warehouse.id}>
+                          <td className="px-6 py-4 whitespace-nowrap">{warehouse.name}</td>
+                          <td className="px-6 py-4 whitespace-nowrap">{warehouse.description}</td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex space-x-2">
+                              <button
+                                onClick={() => { setCurrentWarehouse(warehouse); setIsWarehouseModalOpen(true); }}
+                                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+                              >
+                                <Pencil className="h-4 w-4" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteWarehouse(warehouse.id!)}
+                                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  )
+      </div>
+      )
 }

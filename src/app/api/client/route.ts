@@ -1,63 +1,48 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
-
-export async function GET() {
-  try {
-    const clients = await prisma.client.findMany()
-    return NextResponse.json(clients)
-  } catch (error) {
-    return NextResponse.json({ error: 'Error fetching clients' }, { status: 500 })
-  }
-}
+import { NextRequest, NextResponse } from 'next/server';
+import {prisma} from '@/lib/prisma';
 
 export async function POST(request: NextRequest) {
-  try {
-    const { name, email, phone, address, taxId, documentType, document, personType, regime, country, department, city } = await request.json()
-    const newClient = await prisma.client.create({
-      data: { 
-        name,
-        email,
-        phone,
-        address,
-        taxId,
-        documentType,
-        document,
-        personType,
-        regime,
-        country,
-        department,
-        city
-      }
-    })
-    return NextResponse.json(newClient, { status: 201 })
-  } catch (error) {
-    return NextResponse.json({ error: 'Error creating client' }, { status: 500 })
-  }
+    console.log('POST request received in /api/client');
+    try {
+        const body = await request.json();
+        console.log('Received client data:', body);
+
+        const newClient = await prisma.client.create({
+            data: {
+                name: body.name,
+                email: body.email,
+                phone: body.phone,
+                address: body.address,
+                taxId: body.taxId,
+                documentType: body.documentType,
+                document: body.document,
+                personType: body.personType,
+                regime: body.regime,
+                country: body.country,
+                department: body.department,
+                city: body.city,
+            }
+        });
+
+        console.log('Created client:', newClient);
+        return NextResponse.json(newClient, { status: 201 });
+    } catch (error) {
+        console.error('Error creating client:', error);
+        return NextResponse.json(
+            { error: 'Error creating client', message: (error as Error).message },
+            { status: 500 }
+        );
+    }
 }
 
-export async function PATCH(request: NextRequest) {
-  try {
-    const { id, ...updateData } = await request.json()
-    const updatedClient = await prisma.client.update({
-      where: { id: Number(id) },
-      data: updateData,
-    })
-    return NextResponse.json(updatedClient)
-  } catch (error) {
-    return NextResponse.json({ error: 'Error updating client' }, { status: 500 })
-  }
-}
-
-export async function DELETE(request: NextRequest) {
-  try {
-    const { id } = await request.json()
-    await prisma.client.delete({
-      where: { id: Number(id) },
-    })
-    return NextResponse.json({ message: 'Client deleted successfully' })
-  } catch (error) {
-    return NextResponse.json({ error: 'Error deleting client' }, { status: 500 })
-  }
+export async function GET() {
+    console.log('GET request received in /api/client');
+    try {
+        const clients = await prisma.client.findMany();
+        console.log('Fetched clients:', clients.length);
+        return NextResponse.json(clients);
+    } catch (error) {
+        console.error('Error fetching clients:', error);
+        return NextResponse.json({ error: 'Error fetching clients' }, { status: 500 });
+    }
 }
