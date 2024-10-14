@@ -145,7 +145,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
   }
 
   const handleWhatsAppClick = (number: string) => {
-    const message = encodeURIComponent(`Hola, estoy interesado en el ${article.brand} ${article.name}. ¿Podrían darme más información?`)
+    const message = encodeURIComponent(`Hola, estoy interesado en el ${article.brand} ${article.name}. Financiado que vi en el sitio web www.doctorcel.co ¿Podrían darme más información?`)
     window.open(`https://wa.me/${number}?text=${message}`, '_blank')
     setIsWhatsAppOptionsOpen(false)
   }
