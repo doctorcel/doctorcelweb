@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button/buttoncard';
-import WhatsAppOptions from './Whatsappoptions';
+import WhatsAppOptions from './WhatsappOptions';
 
 interface ModalContentProps {
   article: any; // Define el tipo de article según tu estructura de datos
