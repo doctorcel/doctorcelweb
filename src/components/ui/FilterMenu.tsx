@@ -24,7 +24,6 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ articles, onApplyFilters }) => 
 
   useEffect(() => {
     generateFilters()
-    // Llamamos a resetFilters solo si se generan nuevos filtros
   }, [articles])
 
   const generateFilters = () => {
@@ -42,10 +41,9 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ articles, onApplyFilters }) => 
 
     const finalFilters: Record<string, string[]> = {}
     Object.entries(newFilters).forEach(([key, value]) => {
-      finalFilters[key] = Array.from(value)
+      finalFilters[key] = Array.from(value).sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }))
     })
 
-    // Solo actualizar si los filtros han cambiado
     if (JSON.stringify(filters) !== JSON.stringify(finalFilters)) {
       setFilters(finalFilters)
       resetFilters(finalFilters)
@@ -76,10 +74,15 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ articles, onApplyFilters }) => 
     onApplyFilters(resetFilters)
   }
 
+  // Ordenar las categorías alfabéticamente
+  const sortedCategories = Object.keys(filters).sort((a, b) => 
+    categoryTranslations[a].localeCompare(categoryTranslations[b])
+  )
+
   return (
     <div className="space-y-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
       <Accordion type="single" collapsible className="space-y-2">
-        {Object.entries(filters).map(([category, options]) => (
+        {sortedCategories.map((category) => (
           <AccordionItem key={category} value={category}>
             <AccordionTrigger value={category}>
               <span className="text-lg font-semibold text-gray-700 dark:text-gray-200">
@@ -88,7 +91,7 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ articles, onApplyFilters }) => 
             </AccordionTrigger>
             <AccordionContent value={category}>
               <div className="space-y-2 pl-4">
-                {options.map(option => (
+                {filters[category].map(option => (
                   <div key={option} className="flex items-center">
                     <Checkbox
                       id={`${category}-${option}`}

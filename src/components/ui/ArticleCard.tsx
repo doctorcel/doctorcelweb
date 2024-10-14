@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import Image from 'next/image'
 import { Article } from '../../types'
 import { Button } from "@/components/ui/button/buttoncard"
-import { Phone, Camera, HardDrive, Database, Battery, Cpu, Monitor, ChevronLeft, ChevronRight, X, MessageCircle } from 'lucide-react'
+import { Camera, HardDrive, Database, Battery, Cpu, Monitor, ChevronLeft, ChevronRight, X, MessageCircle } from 'lucide-react'
 
 interface ArticleCardProps {
   article: Article
@@ -196,28 +196,28 @@ export default function ArticleCard({ article }: ArticleCardProps) {
               <ImageSlider />
             </div>
             <div className="flex flex-col md:w-1/2 md:pl-4">
-              <h2 className="text-xl font-bold mb-4 text-green-700 dark:text-green-300 text-center md:text-center">{article.brand} {article.name}</h2>
-              <div className="grid grid-cols-2 gap-2 text-sm mb-4">
-                <div className="flex items-center"><Camera className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" /> <span className="truncate">Cámara: {article.camera}</span></div>
-                <div className="flex items-center"><Camera className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" /> <span className="truncate">Frontal: {article.frontCamera}</span></div>
-                <div className="flex items-center"><HardDrive className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" /> <span className="truncate">Almacenamiento: {article.storage}</span></div>
-                <div className="flex items-center"><Database className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" /> <span className="truncate">RAM: {article.ram}</span></div>
-                <div className="flex items-center"><Monitor className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" /> <span className="truncate">Pantalla: {article.screenSize}</span></div>
-                <div className="flex items-center"><Battery className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" /> <span className="truncate">Batería: {article.batteryCapacity}</span></div>
-                <div className="col-span-2 flex items-center"><Cpu className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" /> <span className="truncate">Procesador: {article.processor}</span></div>
+              <h2 className="text-xl font-bold mb-4 text-green-700 dark:text-green-300 text-center">{article.brand} {article.name}</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm mb-6">
+                <div className="flex items-center"><Camera className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" /> <span>Cámara: {article.camera}</span></div>
+                <div className="flex items-center"><Camera className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" /> <span>Frontal: {article.frontCamera}</span></div>
+                <div className="flex items-center"><HardDrive className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" /> <span>Almacenamiento: {article.storage}</span></div>
+                <div className="flex items-center"><Database className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" /> <span>RAM: {article.ram}</span></div>
+                <div className="flex items-center"><Monitor className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" /> <span>Pantalla: {article.screenSize}</span></div>
+                <div className="flex items-center"><Battery className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" /> <span>Batería: {article.batteryCapacity}</span></div>
+                <div className="md:col-span-2 flex items-center"><Cpu className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" /> <span>Procesador: {article.processor}</span></div>
               </div>
-              <div className="flex justify-between items-center mb-2 text-sm">
-                <div>
+              <div className="flex flex-col sm:flex-row justify-between items-center mb-2 text-sm">
+                <div className="mb-2 sm:mb-0">
                   Antes: <span className="text-gray-500 line-through">${article.price.toLocaleString()}</span>  
                 </div>
                 <div>
                   Oferta:
-                  <span className="text-green-600 dark:text-green-400 font-bold md:text-2xl ml-1">${article.offerPrice.toLocaleString()}</span>
+                  <span className="text-green-600 dark:text-green-400 font-bold text-xl sm:text-2xl ml-1">${article.offerPrice.toLocaleString()}</span>
                 </div>
               </div>
-              <div className="text-sm mb-2">¿No tienes el dinero? ¡No te preocupes, llévalo ahora a crédito!</div>
+              <div className="text-sm mb-2 text-center sm:text-left">¿No tienes el dinero? ¡No te preocupes, llévalo ahora a crédito!</div>
               <div className="bg-green-100 dark:bg-green-900 p-2 rounded-lg mb-4">
-                <h3 className="font-semibold mb-1 text-green-700 dark:text-green-300 text-sm">Financiación: {article.financialEntity}</h3>
+                <h3 className="font-semibold mb-1 text-green-700 dark:text-green-300 text-sm text-center sm:text-left">Financiación: {article.financialEntity}</h3>
                 <div className="grid grid-cols-2 gap-1 text-xs">
                   <div>Inicial: <span className="font-bold">${article.Initial?.toLocaleString()}</span></div>
                   <div>8 Cuotas: <span className="font-bold">${article.price8?.toLocaleString()}</span></div>
