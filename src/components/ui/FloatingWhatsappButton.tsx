@@ -20,7 +20,8 @@ const FloatingWhatsAppButton = () => {
   }, [])
 
   const handleWhatsAppClick = (number: string) => {
-    window.open(`https://wa.me/${number}`, '_blank')
+    const message = encodeURIComponent(`Hola, estoy interesado en un articulo que vi en el sitio web www.doctorcel.co ¿Podrían darme más información?`)
+    window.open(`https://wa.me/${number}?text=${message}`, '_blank')
   }
 
   const toggleOptions = () => {
@@ -42,18 +43,18 @@ const FloatingWhatsAppButton = () => {
         </span>
       </button>
       {isOpen && (
-        <div className="absolute bottom-full right-0 mb-2 bg-white dark:bg-gray-700  rounded-lg shadow-lg overflow-hidden transition-all duration-300 w-48">
+        <div className="absolute bottom-full right-0 mb-2 bg-white dark:bg-gray-700  rounded-lg shadow-lg overflow-hidden transition-all duration-300 w-auto">
           <button
             onClick={() => handleWhatsAppClick('+573004001077')}
             className="w-full text-gray-800 dark:text-white dark:bg-gray-700 text-left px-4 py-2 hover:bg-gray-100 hover:dark:bg-gray-900 transition-colors duration-200"
           >
-            Sede Arrayanes
+            Sede Itagui
           </button>
           <button
             onClick={() => handleWhatsAppClick('+573504089988')}
             className="w-full text-left text-gray-800  dark:text-white dark:bg-gray-700  px-4 py-2 hover:bg-gray-100 hover:dark:bg-gray-900 transition-colors duration-200"
           >
-            Sede Barichara
+            Sede San Antonio de Prado
           </button>
         </div>
       )}
