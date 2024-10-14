@@ -43,18 +43,20 @@ const FloatingWhatsAppButton = () => {
         </span>
       </button>
       {isOpen && (
-        <div className="absolute bottom-full right-0 mb-2 bg-white dark:bg-gray-700  rounded-lg shadow-lg overflow-hidden transition-all duration-300 w-auto">
+        <div className="absolute bottom-full right-0 mb-2 bg-white dark:bg-gray-700 rounded-lg shadow-lg overflow-hidden transition-all duration-300 w-64">
           <button
             onClick={() => handleWhatsAppClick('+573004001077')}
-            className="w-full text-gray-800 dark:text-white dark:bg-gray-700 text-left px-4 py-2 hover:bg-gray-100 hover:dark:bg-gray-900 transition-colors duration-200"
+            className="w-full text-gray-800 dark:text-white dark:bg-gray-700 text-left px-4 py-3 hover:bg-gray-100 hover:dark:bg-gray-900 transition-colors duration-200 flex items-center"
           >
-            Sede Itagui
+            <MessageCircle className="w-5 h-5 mr-2 text-green-500" />
+            <span className="whitespace-normal">Sede Itagui</span>
           </button>
           <button
             onClick={() => handleWhatsAppClick('+573504089988')}
-            className="w-full text-left text-gray-800  dark:text-white dark:bg-gray-700  px-4 py-2 hover:bg-gray-100 hover:dark:bg-gray-900 transition-colors duration-200"
+            className="w-full text-left text-gray-800 dark:text-white dark:bg-gray-700 px-4 py-3 hover:bg-gray-100 hover:dark:bg-gray-900 transition-colors duration-200 flex items-center"
           >
-            Sede San Antonio de Prado
+            <MessageCircle className="w-5 h-5 mr-2 text-green-500" />
+            <span className="whitespace-normal">Sede San Antonio de Prado</span>
           </button>
         </div>
       )}
