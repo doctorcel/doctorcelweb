@@ -16,6 +16,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
   const [isWhatsAppOptionsOpen, setIsWhatsAppOptionsOpen] = useState(false)
   const progressRef = useRef<HTMLDivElement>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const modalContentRef = useRef<HTMLDivElement>(null)
 
   const images = [article.imageUrl1, article.imageUrl2, article.imageUrl3, article.imageUrl4].filter(Boolean)
 
@@ -49,6 +50,20 @@ export default function ArticleCard({ article }: ArticleCardProps) {
       }
     }
   }, [isModalOpen, images.length, nextImage, isFullscreen, startProgressAnimation, currentImageIndex])
+
+  // Prevent auto-scroll when image changes
+  useEffect(() => {
+    if (modalContentRef.current) {
+      const scrollPosition = modalContentRef.current.scrollTop
+      modalContentRef.current.style.overflow = 'hidden'
+      setTimeout(() => {
+        if (modalContentRef.current) {
+          modalContentRef.current.style.overflow = 'auto'
+          modalContentRef.current.scrollTop = scrollPosition
+        }
+      }, 100)
+    }
+  }, [currentImageIndex])
 
   const ImageSlider = () => (
     <div className='flex h-full items-center'>
@@ -95,7 +110,6 @@ export default function ArticleCard({ article }: ArticleCardProps) {
         )}
       </div>
     </div>
-
   )
 
   const FullscreenImage = () => {
@@ -141,18 +155,18 @@ export default function ArticleCard({ article }: ArticleCardProps) {
   }
 
   const WhatsAppOptions = () => (
-    <div className="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-700 rounded-lg shadow-lg overflow-hidden transition-all duration-300 w-48">
+    <div className="absolute bottom-full left-0 mb-2 bg-white dark:bg-gray-700 rounded-lg shadow-lg overflow-hidden transition-all duration-300 w-auto">
       <button
         onClick={() => handleWhatsAppClick('+573004001077')}
         className="w-full text-gray-800 dark:text-white dark:bg-gray-700 text-left px-4 py-2 hover:bg-gray-100 hover:dark:bg-gray-900 transition-colors duration-200"
       >
-        Sede Arrayanes
+        Sede Itagui
       </button>
       <button
         onClick={() => handleWhatsAppClick('+573504089988')}
         className="w-full text-left text-gray-800 dark:text-white dark:bg-gray-700 px-4 py-2 hover:bg-gray-100 hover:dark:bg-gray-900 transition-colors duration-200"
       >
-        Sede Barichara
+        Sede San Antonio de Prado
       </button>
     </div>
   )
@@ -166,44 +180,45 @@ export default function ArticleCard({ article }: ArticleCardProps) {
         onClick={() => setIsModalOpen(false)}
       >
         <div
-          className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+          ref={modalContentRef}
+          className="bg-white dark:bg-gray-800 rounded-lg p-4 w-full max-w-4xl max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
           <button
             onClick={() => setIsModalOpen(false)}
-            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
             aria-label="Close modal"
           >
             <X className="w-6 h-6" />
           </button>
           <div className="flex flex-col md:flex-row">
-            <div className="md:w-1/2">
+            <div className="md:w-1/2 mb-4 md:mb-0">
               <ImageSlider />
             </div>
-            <div className="md:w-1/2 md:pl-6 mt-4 md:mt-0 ">
-              <h2 className="text-2xl font-bold mb-10 text-green-700 dark:text-green-300 flex justify-center">{article.brand} {article.name}</h2>
-              <div className="grid grid-cols-2 gap-2 text-sm mb-10">
-                <div className="flex "><Camera className="w-4 h-4 mr-2 text-green-500" /> Cámara: {article.camera}</div>
-                <div className="flex "><Camera className="w-4 h-4 mr-2 text-green-500" /> Frontal: {article.frontCamera}</div>
-                <div className="flex "><HardDrive className="w-4 h-4 mr-2 text-green-500" /> Almacenamiento: {article.storage}</div>
-                <div className="flex "><Database className="w-4 h-4 mr-2 text-green-500" /> RAM: {article.ram}</div>
-                <div className="flex "><Monitor className="w-4 h-4 mr-2 text-green-500" /> Pantalla: {article.screenSize}</div>
-                <div className="flex "><Battery className="w-4 h-4 mr-2 text-green-500" /> Batería: {article.batteryCapacity}</div>
-                <div className="col-span-2 flex items-center"><Cpu className="w-4 h-4 mr-2 text-green-500" /> Procesador: {article.processor}</div>
+            <div className="flex flex-col md:w-1/2 md:pl-4">
+              <h2 className="text-xl font-bold mb-4 text-green-700 dark:text-green-300 text-center md:text-center">{article.brand} {article.name}</h2>
+              <div className="grid grid-cols-2 gap-2 text-sm mb-4">
+                <div className="flex items-center"><Camera className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" /> <span className="truncate">Cámara: {article.camera}</span></div>
+                <div className="flex items-center"><Camera className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" /> <span className="truncate">Frontal: {article.frontCamera}</span></div>
+                <div className="flex items-center"><HardDrive className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" /> <span className="truncate">Almacenamiento: {article.storage}</span></div>
+                <div className="flex items-center"><Database className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" /> <span className="truncate">RAM: {article.ram}</span></div>
+                <div className="flex items-center"><Monitor className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" /> <span className="truncate">Pantalla: {article.screenSize}</span></div>
+                <div className="flex items-center"><Battery className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" /> <span className="truncate">Batería: {article.batteryCapacity}</span></div>
+                <div className="col-span-2 flex items-center"><Cpu className="w-4 h-4 mr-2 text-green-500 flex-shrink-0" /> <span className="truncate">Procesador: {article.processor}</span></div>
               </div>
-              <div className="mt-4 flex justify-between items-center mb-4">
+              <div className="flex justify-between items-center mb-2 text-sm">
                 <div>
-                  Antes:<span className="text-gray-500 line-through text-lg ml-3">${article.price.toLocaleString()}</span>  
+                  Antes: <span className="text-gray-500 line-through">${article.price.toLocaleString()}</span>  
                 </div>
                 <div>
                   Oferta:
-                  <span className="text-green-600 dark:text-green-400 font-bold text-3xl ml-3">${article.offerPrice.toLocaleString()}</span>
+                  <span className="text-green-600 dark:text-green-400 font-bold md:text-2xl ml-1">${article.offerPrice.toLocaleString()}</span>
                 </div>
               </div>
-              <div>¿No tienes el dinero? ¡No te preocupes, llévalo ahora a crédito!</div>
-              <div className="mt-4 bg-green-100 dark:bg-green-900 p-4 rounded-lg">
-                <h3 className="font-semibold mb-2 text-green-700 dark:text-green-300">Financiación: {article.financialEntity}</h3>
-                <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="text-sm mb-2">¿No tienes el dinero? ¡No te preocupes, llévalo ahora a crédito!</div>
+              <div className="bg-green-100 dark:bg-green-900 p-2 rounded-lg mb-4">
+                <h3 className="font-semibold mb-1 text-green-700 dark:text-green-300 text-sm">Financiación: {article.financialEntity}</h3>
+                <div className="grid grid-cols-2 gap-1 text-xs">
                   <div>Inicial: <span className="font-bold">${article.Initial?.toLocaleString()}</span></div>
                   <div>8 Cuotas: <span className="font-bold">${article.price8?.toLocaleString()}</span></div>
                   <div>12 Cuotas: <span className="font-bold">${article.price12?.toLocaleString()}</span></div>
@@ -213,9 +228,9 @@ export default function ArticleCard({ article }: ArticleCardProps) {
               <div className="relative">
                 <Button 
                   onClick={toggleWhatsAppOptions} 
-                  className="w-full mt-4 bg-green-500 hover:bg-green-600 text-white flex items-center justify-center"
+                  className="w-full bg-green-500 hover:bg-green-600 text-white flex items-center justify-center text-sm py-2"
                 >
-                  <MessageCircle className="w-5 h-5 mr-2" />
+                  <MessageCircle className="w-4 h-4 mr-2" />
                   Contáctanos
                 </Button>
                 {isWhatsAppOptionsOpen && <WhatsAppOptions />}
