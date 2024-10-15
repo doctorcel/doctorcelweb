@@ -13,6 +13,7 @@ import FloatingThemeToggle from '@/components/ui/DarkModeButton'
 import FloatingWhatsAppButton from "./FloatingWhatsappButton"
 import { Article } from '@/types'
 import { motion, AnimatePresence } from "framer-motion"
+import { useRef } from "react"
 
 const CELLPHONES_CATEGORY_ID = 2;
 const ITEMS_PER_PAGE = 6;
@@ -25,6 +26,7 @@ export default function Homepage() {
     const [mounted, setMounted] = React.useState(false)
     const [activeFilters, setActiveFilters] = React.useState<Record<string, Record<string, boolean>>>({})
     const [direction, setDirection] = React.useState(0)
+    const containerRef = useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
         setMounted(true);
@@ -39,11 +41,13 @@ export default function Homepage() {
     const nextSlide = () => {
         setDirection(1)
         setCurrentSlide((prev) => (prev + 1) % totalSlides)
+        scrollToTop()
     }
 
     const prevSlide = () => {
         setDirection(-1)
         setCurrentSlide((prev) => (prev - 1 + totalSlides) % totalSlides)
+        scrollToTop()
     }
 
     const applyFilters = (filters: Record<string, Record<string, boolean>>) => {
@@ -100,6 +104,12 @@ export default function Homepage() {
     }
 
     if (!mounted) return null
+
+    const scrollToTop = () => {
+        if (containerRef.current) {
+            containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    };
 
     return (
         <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900 text-black dark:text-white transition-colors duration-300">
@@ -200,7 +210,7 @@ export default function Homepage() {
                             <div className="w-full md:w-3/4">
                                 {filteredArticles.length > 0 ? (
                                     <>
-                                        <div className="flex justify-between items-center mb-4">
+                                        <div className="flex justify-between items-center mb-4" ref={containerRef}>
                                             <div className="flex items-center space-x-2">
                                                 <Button 
                                                     variant="outline" 
@@ -225,6 +235,28 @@ export default function Homepage() {
                                         <div className="overflow-hidden">
                                             {renderCards()}
                                         </div>
+                                        <div className="flex justify-between items-center mt-4 md:hidden">
+                                            <div className="flex items-center space-x-2">
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="icon" 
+                                                    onClick={prevSlide} 
+                                                    className="bg-white dark:bg-gray-700 text-green-600 dark:text-green-400 border-green-600 dark:border-green-400 hover:bg-green-50 dark:hover:bg-green-900"
+                                                    disabled={totalSlides <= 1}
+                                                >
+                                                    <ChevronLeft className="h-4 w-4" />
+                                                </Button>
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="icon" 
+                                                    onClick={nextSlide} 
+                                                    className="bg-white dark:bg-gray-700 text-green-600 dark:text-green-400 border-green-600 dark:border-green-400 hover:bg-green-50 dark:hover:bg-green-900"
+                                                    disabled={totalSlides <= 1}
+                                                >
+                                                    <ChevronRight className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
                                     </>
                                 ) : (
                                     <div className="text-center py-12">
@@ -236,7 +268,7 @@ export default function Homepage() {
                     </div>
                 </section>
             </main>
-            <footer className="flex justify-center align-center w-full py-6 bg-green-800 dark:bg-gray-900 text-white transition-colors duration-300">
+            <footer className="flex justify-center align-center text-center w-full py-6 bg-green-800 dark:bg-gray-900 text-white transition-colors duration-300">
                 <p>&copy; 2024 Doctor Cel. Todos los derechos reservados.</p>
             </footer>
             <FloatingWhatsAppButton />
