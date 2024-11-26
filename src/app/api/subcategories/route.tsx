@@ -27,8 +27,7 @@ export async function POST(request: NextRequest) {
     });
     return NextResponse.json(newSubcategory, { status: 201 });
   } catch (error) {
-    console.error('Error creating subcategory:', error);
-    if (error instanceof Error) {
+    console.error('Error creating subcategory:', error);   if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
     return NextResponse.json({ error: 'Error creating subcategory' }, { status: 500 });
