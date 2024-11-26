@@ -2,6 +2,7 @@ import React from 'react';
 import styles from '@/styles/Hero.module.scss';
 
 export const Hero: React.FC = () => {
+  
   return (
     <div className={styles.hero}>
       <h1>Bienvenido a Doctor Cel</h1>
