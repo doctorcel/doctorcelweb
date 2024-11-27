@@ -17,37 +17,53 @@ model Warehouse {
   techServices TechService[]
 }
 
-model Article {
-  id            Int           @id @default(autoincrement())
-  name          String
-  description   String
-  price         Float
-  categoryId    Int
-  camera        String?
-  createdAt     DateTime      @default(now())
-  price12       Float?
-  price16       Float?
-  Initial       Float?
-  price8        Float?
-  processor     String?
-  ram           String?
-  storage       String?
-  updatedAt     DateTime      @updatedAt
-  imageUrl1     String?
-  imageUrl2     String?
-  imageUrl3     String?
-  imageUrl4     String?
-  warehouseId   Int
-  brand         String?       // Nuevo campo
-  frontCamera   String?       // Nuevo campo
-  screenSize    String?       // Nuevo campo
-  batteryCapacity String?     // Nuevo campo
-  financialEntity String?     // Nuevo campo
-  offerPrice    Float?        // Nuevo campo
-  category      Category      @relation(fields: [categoryId], references: [id])
-  warehouse     Warehouse     @relation(fields: [warehouseId], references: [id])
-  InvoiceItem   InvoiceItem[]
+enum Visibility {
+  ENABLED
+  DISABLED
 }
+
+enum ActiveStatus {
+  ENABLED
+  DISABLED
+}
+
+model Article {
+  id              Int           @id @default(autoincrement())
+  name            String
+  description     String
+  price           Float
+  categoryId      Int
+  camera          String?
+  createdAt       DateTime      @default(now())
+  price12         Float?
+  price16         Float?
+  Initial         Float?
+  price8          Float?
+  processor       String?
+  ram             String?
+  storage         String?
+  updatedAt       DateTime      @updatedAt
+  imageUrl1       String?
+  imageUrl2       String?
+  imageUrl3       String?
+  imageUrl4       String?
+  warehouseId     Int
+  brand           String?
+  frontCamera     String?
+  screenSize      String?
+  batteryCapacity String?
+  financialEntity String?
+  offerPrice      Float?
+  cost            Float         @default(0)
+  serialNumber    Int           @default(0)    // Nuevo campo con valor predeterminado 0
+  visible         Visibility    @default(DISABLED) // Nuevo campo con enum y valor predeterminado DISABLED
+  active          ActiveStatus  @default(ENABLED)  // Nuevo campo con enum y valor predeterminado ENABLED
+  category        Category      @relation(fields: [categoryId], references: [id])
+  warehouse       Warehouse     @relation(fields: [warehouseId], references: [id])
+  InvoiceItem     InvoiceItem[]
+}
+
+
 
 model Category {
   id            Int            @id @default(autoincrement())

@@ -3,10 +3,11 @@ import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
+// Método GET
 export async function GET() {
   try {
     const articles = await prisma.article.findMany({
-      include: { category: true, warehouse: true }
+      include: { category: true, warehouse: true }  // Esto incluye las relaciones
     });
     return NextResponse.json(articles);
   } catch (error) {
@@ -15,6 +16,7 @@ export async function GET() {
   }
 }
 
+// Método POST (Crear un artículo)
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -43,6 +45,10 @@ export async function POST(request: NextRequest) {
         batteryCapacity: body.batteryCapacity,
         financialEntity: body.financialEntity,
         offerPrice: body.offerPrice ? parseFloat(body.offerPrice) : null,
+        cost: body.cost ? parseFloat(body.cost) : 0,  // Si no se proporciona, será 0
+        visible: body.visible || 'DISABLED',  // Valor por defecto: 'DISABLED'
+        active: body.active || 'ENABLED',    // Valor por defecto: 'ENABLED'
+        serialNumber: body.serialNumber || 0  // Valor por defecto: 0
       }
     });
     return NextResponse.json(newArticle, { status: 201 });
@@ -55,6 +61,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// Método PATCH (Actualizar un artículo)
 export async function PATCH(request: NextRequest) {
   try {
     const id = request.nextUrl.searchParams.get('id');
@@ -88,6 +95,10 @@ export async function PATCH(request: NextRequest) {
         batteryCapacity: updateData.batteryCapacity,
         financialEntity: updateData.financialEntity,
         offerPrice: updateData.offerPrice ? parseFloat(updateData.offerPrice) : null,
+        cost: updateData.cost ? parseFloat(updateData.cost) : undefined,  // Solo actualiza 'cost' si se pasa un valor
+        visible: updateData.visible || undefined,  // Solo actualiza 'visible' si se pasa un valor
+        active: updateData.active || undefined,  // Solo actualiza 'active' si se pasa un valor
+        serialNumber: updateData.serialNumber || undefined  // Solo actualiza 'serialNumber' si se pasa un valor
       },
     });
     return NextResponse.json(updatedArticle);
@@ -100,8 +111,7 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
-// DELETE function remains the same
-
+// Método DELETE (Eliminar un artículo)
 export async function DELETE(request: NextRequest) {
   try {
     const id = request.nextUrl.searchParams.get('id');

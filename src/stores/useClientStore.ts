@@ -1,12 +1,11 @@
 import { create } from 'zustand';
-import { Client } from '@/models/client';
 
 interface ClientStore {
-  selectedClient: Client | null;
-  setSelectedClient: (client: Client | null) => void;
+  selectedClientId: number | null;
+  setSelectedClientId: (id: number) => void;
 }
 
-export const useClientStore = create<ClientStore>((set: any) => ({
-  selectedClient: null,
-  setSelectedClient: (client: Client | null) => set({ selectedClient: client }),
+export const useClientStore = create<ClientStore>((set) => ({
+  selectedClientId: null,
+  setSelectedClientId: (id: number) => set({ selectedClientId: id }),
 }));
