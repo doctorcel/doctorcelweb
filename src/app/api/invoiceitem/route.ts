@@ -19,6 +19,7 @@ export async function POST(request: NextRequest) {
       data: { 
         invoiceId: Number(invoiceId),
         articleId: Number(articleId),
+        name: String(articleId),
         quantity: Number(quantity),
         price: Number(price),
         subtotal: Number(subtotal),
