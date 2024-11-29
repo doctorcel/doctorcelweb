@@ -1,4 +1,3 @@
-// src/components/ui/SearchClientBar.tsx
 import React, { useState, useEffect } from 'react';
 import { Client } from '@/models/client';
 import { getClients } from '@/services/clientService';
@@ -8,6 +7,7 @@ const SearchClientBar: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [clients, setClients] = useState<Client[]>([]);
   const [filteredClients, setFilteredClients] = useState<Client[]>([]);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const setSelectedClientId = useClientStore((state) => state.setSelectedClientId);
 
   // Función para filtrar los clientes en base a la búsqueda
@@ -46,30 +46,50 @@ const SearchClientBar: React.FC = () => {
   // Maneja el cambio en el campo de búsqueda
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
+    setSelectedClient(null); // Resetea el cliente seleccionado al cambiar la búsqueda
   };
 
   // Maneja la selección de un cliente
-  const handleClientSelect = (clientId: number) => {
-    setSelectedClientId(clientId);
-    setSearchQuery('');  // Limpiar la barra de búsqueda después de seleccionar
-    setFilteredClients([]);  // Limpiar los resultados de búsqueda
+  const handleClientSelect = (client: Client) => {
+    setSelectedClient(client);
+    setSelectedClientId(client.id); // Guarda el ID en el store
+    setSearchQuery(client.name); // Muestra el nombre del cliente seleccionado en la barra
+    setFilteredClients([]); // Limpia los resultados de búsqueda
+  };
+
+  // Maneja la limpieza de la selección del cliente
+  const clearSelection = () => {
+    setSelectedClient(null);
+    setSearchQuery('');
+    setSelectedClientId(null); // Limpia el ID en el store
   };
 
   return (
     <div className="relative mt-5">
-      <input
-        type="text"
-        value={searchQuery}
-        onChange={handleSearchChange}
-        placeholder="Buscar cliente por nombre, cédula o teléfono..."
-        className="p-2 border rounded-md w-full"
-      />
+      <div className="flex items-center">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={handleSearchChange}
+          placeholder="Buscar cliente por nombre, cédula o teléfono..."
+          className="p-2 border rounded-md w-full"
+          disabled={!!selectedClient} // Desactiva la barra si hay un cliente seleccionado
+        />
+        {selectedClient && (
+          <button
+            onClick={clearSelection}
+            className="ml-2 p-2 bg-red-500 text-white rounded-md"
+          >
+            X
+          </button>
+        )}
+      </div>
       {filteredClients.length > 0 && (
         <ul className="absolute mt-2 w-full bg-white border rounded-md shadow-md max-h-60 dark:bg-gray-900 overflow-y-auto">
           {filteredClients.map(client => (
             <li
               key={client.id}
-              onClick={() => handleClientSelect(client.id)}
+              onClick={() => handleClientSelect(client)}
               className="p-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               {client.name} - {client.document} - {client.phone}

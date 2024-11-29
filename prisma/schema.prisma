@@ -115,7 +115,7 @@ model Invoice {
   date          DateTime      @default(now())
   total         Float
   clientId      Int
-  companyInfoId Int
+  companyInfoId Int?
   clientName    String
   clientAddress String?
   clientPhone   String?
@@ -123,8 +123,9 @@ model Invoice {
   clientTaxId   String?
   warehouseId   Int
   client        Client        @relation(fields: [clientId], references: [id])
-  companyInfo   CompanyInfo   @relation(fields: [companyInfoId], references: [id])
+  companyInfo   CompanyInfo?   @relation(fields: [companyInfoId], references: [id])
   warehouse     Warehouse     @relation(fields: [warehouseId], references: [id])
+  active        ActiveStatus  @default(ENABLED)  // Nuevo campo con enum y valor predeterminado ENABLED
   items         InvoiceItem[]
 }
 
@@ -132,8 +133,10 @@ model InvoiceItem {
   id        Int     @id @default(autoincrement())
   invoiceId Int
   articleId Int
+  name      String
   quantity  Int
   price     Float
+  cost      Float   @default(0)
   subtotal  Float
   discount  Float?  // Nuevo campo
   article   Article @relation(fields: [articleId], references: [id])

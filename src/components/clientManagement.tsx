@@ -5,14 +5,17 @@ import Button from "@/components/ui/button/button";
 import Modal from "@/components/ui/modal/modal";
 import ClientForm from "@/components/ui/form/newClientForm";
 import { Client } from "@/models/client";
-import SearchClientBar from "./ui/search/searchClientBar";
-import CategoryManagement from "./dashboard/CategoryManagement";
 import CreateProduct from "./ui/createProduct";
 import { Plus } from "lucide-react";
+import InvoiceForm from "./ui/invoice/invoiceform";
+
+
 
 const ClientManagement: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
+
+
 
   const handleClientAdded = (client: Client) => {
     setClients((prev) => [...prev, client]);
@@ -34,7 +37,7 @@ const ClientManagement: React.FC = () => {
           icon={<Plus className="h-4 w-4" />}
           onClick={handleOpenModal}
           className="bg-green-600 hover:bg-green-700 font-bold py-2 px-4 inline-flex items-center"
-        />{" "}
+        />
         <CreateProduct />
       </div>
 
@@ -47,7 +50,8 @@ const ClientManagement: React.FC = () => {
           onClientAdded={handleClientAdded}
         />
       </Modal>
-      <SearchClientBar />
+
+      <InvoiceForm />
 
       {/* <CategoryManagement /> */}
     </div>
