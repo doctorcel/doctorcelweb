@@ -110,6 +110,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClose, onClientAdded }) => {
             onChange={handleChange}
             className="mt-2 p-2 border w-full rounded-md"
             placeholder="Ingrese el nombre"
+            required
           />
           {errors.name && (
             <span className="text-red-500 text-sm">{errors.name}</span>
@@ -128,6 +129,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClose, onClientAdded }) => {
             onChange={handleChange}
             className="mt-2 p-2 border w-full rounded-md"
             placeholder="Ingrese el correo electrónico"
+            required
           />
           {errors.email && (
             <span className="text-red-500 text-sm">{errors.email}</span>
@@ -146,6 +148,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClose, onClientAdded }) => {
             onChange={handleChange}
             className="mt-2 p-2 border w-full rounded-md"
             placeholder="Ingrese el teléfono"
+            required
           />
           {errors.phone && (
             <span className="text-red-500 text-sm">{errors.phone}</span>
@@ -164,6 +167,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClose, onClientAdded }) => {
             onChange={handleChange}
             className="mt-2 p-2 border w-full rounded-md"
             placeholder="Ingrese la dirección"
+            required
           />
           {errors.address && (
             <span className="text-red-500 text-sm">{errors.address}</span>
@@ -183,6 +187,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClose, onClientAdded }) => {
             name="documentType"
             value={formData.documentType || ""}
             onChange={handleChange}
+            required
             className="mt-2 p-2 border w-full rounded-md"
           >
             <option value="">Seleccione</option>
@@ -211,6 +216,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClose, onClientAdded }) => {
             onChange={handleChange}
             className="mt-2 p-2 border w-full rounded-md"
             placeholder="Ingrese el número de documento"
+            required
           />
           {errors.document && (
             <span className="text-red-500 text-sm">{errors.document}</span>
@@ -327,7 +333,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClose, onClientAdded }) => {
         <button
           type="button"
           onClick={onClose}
-          className="bg-gray-500 text-white px-4 py-2 rounded-md"
+          className="bg-red-500 text-white px-4 py-2 rounded-md"
         >
           Cancelar
         </button>

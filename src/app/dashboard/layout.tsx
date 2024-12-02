@@ -19,7 +19,7 @@ export default function DashBoardLayout({
       <div className="flex-shrink-0">
         <NavBarDashboard />
       </div>
-      <main className="flex-grow overflow-auto p-8">
+      <main className="flex-grow overflow-auto">
       <AuthProvider>
         {children}
         </ AuthProvider>
