@@ -1,100 +1,100 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Status } from '@prisma/client';
+import { NextResponse } from 'next/server';
+import { CreateTechServiceDTO, UpdateTechServiceDTO, TechServiceResponse } from '@/models/techservice';
 
 const prisma = new PrismaClient();
 
-export async function GET() {
+// ** POST: Crear un nuevo TechService **
+export async function POST(req: Request) {
   try {
-    const techServices = await prisma.techService.findMany({
-      include: { client: true, technician: true, warehouse: true }
-    });
-    return NextResponse.json(techServices);
-  } catch (error) {
-    console.error('Error fetching tech services:', error);
-    return NextResponse.json({ error: 'Error fetching tech services' }, { status: 500 });
-  }
-}
+    const data: CreateTechServiceDTO = await req.json();
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
+
+    // Crear el TechService en la base de datos
     const newTechService = await prisma.techService.create({
-      data: { 
-        description: body.description,
-        status: body.status,
-        clientId: parseInt(body.clientId),
-        deviceType: body.deviceType,
-        serialNumber: body.serialNumber,
-        technicianId: parseInt(body.technicianId),
-        warehouseId: parseInt(body.warehouseId),
-        deliveryDate: body.deliveryDate ? new Date(body.deliveryDate) : undefined,
-        brand: body.brand,
-        color: body.color,
-        observations: body.observations,
-        password: body.password
+      data: {
+        status: data.status,
+        deviceType: data.deviceType,
+        serialNumber: data.serialNumber || null,
+        clientId: data.clientId,
+        technicianId: data.technicianId || null,
+        warehouseId: data.warehouseId,
+        deliveryDate: data.deliveryDate ? new Date(data.deliveryDate) : null,
+        brand: data.brand || null,
+        color: data.color || null,
+        observations: data.observations || null,
+        password: data.password || null,
+        createdAt: data.createdAt || '',
       },
-      include: { client: true, technician: true, warehouse: true }
     });
+
     return NextResponse.json(newTechService, { status: 201 });
   } catch (error) {
-    console.error('Error creating tech service:', error);
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-    return NextResponse.json({ error: 'Error creating tech service' }, { status: 500 });
+    console.error('Error creating TechService:', error);
+    return NextResponse.json({ message: 'Error creating TechService' }, { status: 500 });
   }
 }
 
-export async function PATCH(request: NextRequest) {
+// ** GET: Obtener todos los TechServices o uno específico **
+export async function GET(req: Request) {
+  const url = new URL(req.url);
+  const id = url.searchParams.get('id');
+
   try {
-    const id = request.nextUrl.searchParams.get('id');
-    if (!id) {
-      return NextResponse.json({ error: 'Tech Service ID is required' }, { status: 400 });
+    if (id) {
+      // Obtener un solo TechService por id
+      const techService = await prisma.techService.findUnique({
+        where: { id: parseInt(id) },
+      });
+
+      if (!techService) {
+        return NextResponse.json({ message: 'TechService not found' }, { status: 404 });
+      }
+
+      return NextResponse.json(techService, { status: 200 });
+    } else {
+      // Obtener todos los TechServices
+      const techServices = await prisma.techService.findMany();
+      return NextResponse.json(techServices, { status: 200 });
     }
-    const updateData = await request.json();
-    const updatedTechService = await prisma.techService.update({
-      where: { id: parseInt(id) },
+  } catch (error) {
+    console.error('Error fetching TechService(s):', error);
+    return NextResponse.json({ message: 'Error fetching TechService(s)' }, { status: 500 });
+  }
+}
+
+// ** PATCH: Actualizar un TechService existente **
+export async function PATCH(req: Request) {
+  const url = new URL(req.url);
+  const id = url.pathname.split('/').pop();
+
+  const data: UpdateTechServiceDTO = await req.json();
+
+  try {
+    if (!id || isNaN(parseInt(id))) {
+      return NextResponse.json({ message: 'Valid TechService ID is required' }, { status: 400 });
+    }
+
+    // Actualizar el TechService
+    const techService = await prisma.techService.update({
+      where: { id: parseInt(id) }, // Usamos parseInt(id) para asegurarnos de que sea un número
       data: {
-        description: updateData.description,
-        status: updateData.status,
-        clientId: updateData.clientId ? parseInt(updateData.clientId) : undefined,
-        deviceType: updateData.deviceType,
-        serialNumber: updateData.serialNumber,
-        technicianId: updateData.technicianId ? parseInt(updateData.technicianId) : undefined,
-        warehouseId: updateData.warehouseId ? parseInt(updateData.warehouseId) : undefined,
-        deliveryDate: updateData.deliveryDate ? new Date(updateData.deliveryDate) : undefined,
-        brand: updateData.brand,
-        color: updateData.color,
-        observations: updateData.observations,
-        password: updateData.password
+        status: data.status,
+        deviceType: data.deviceType,
+        serialNumber: data.serialNumber,
+        technicianId: data.technicianId,
+        warehouseId: data.warehouseId,
+        deliveryDate: data.deliveryDate ? new Date(data.deliveryDate) : undefined,
+        brand: data.brand,
+        color: data.color,
+        observations: data.observations,
+        password: data.password,
       },
-      include: { client: true, technician: true, warehouse: true }
     });
-    return NextResponse.json(updatedTechService);
-  } catch (error) {
-    console.error('Error updating tech service:', error);
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-    return NextResponse.json({ error: 'Error updating tech service' }, { status: 500 });
-  }
-}
 
-export async function DELETE(request: NextRequest) {
-  try {
-    const id = request.nextUrl.searchParams.get('id');
-    if (!id) {
-      return NextResponse.json({ error: 'Tech Service ID is required' }, { status: 400 });
-    }
-    await prisma.techService.delete({
-      where: { id: parseInt(id) },
-    });
-    return NextResponse.json({ message: 'Tech service deleted successfully' });
+    return NextResponse.json(techService, { status: 200 });
   } catch (error) {
-    console.error('Error deleting tech service:', error);
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-    return NextResponse.json({ error: 'Error deleting tech service' }, { status: 500 });
+    console.error('Error updating TechService:', error);
+    return NextResponse.json({ message: 'Error updating TechService' }, { status: 500 });
   }
 }

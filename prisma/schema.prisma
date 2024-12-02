@@ -68,6 +68,7 @@ model Article {
 model Category {
   id            Int            @id @default(autoincrement())
   name          String
+  active          ActiveStatus  @default(ENABLED)  // Nuevo campo con enum y valor predeterminado ENABLED
   articles      Article[]
   subcategories Subcategory[]
 }
@@ -91,24 +92,31 @@ model Order {
 
 model TechService {
   id           Int       @id @default(autoincrement())
-  createdAt    DateTime  @default(now())
-  description  String
-  status       String
+  createdAt    String  
+  status       Status
   deviceType   String
   serialNumber String?
   clientId     Int
-  technicianId Int
+  technicianId Int?
   warehouseId  Int
   deliveryDate DateTime? // Nuevo campo
   brand        String?   // Nuevo campo
   color        String?   // Nuevo campo
   observations String?   // Nuevo campo
   password     String?   // Nuevo campo
+  active          ActiveStatus  @default(ENABLED)  // Nuevo campo con enum y valor predeterminado ENABLED
   client       Client    @relation(fields: [clientId], references: [id])
-  technician   User      @relation(fields: [technicianId], references: [id])
+  technician   User?      @relation(fields: [technicianId], references: [id])
   warehouse    Warehouse @relation(fields: [warehouseId], references: [id])
 }
 
+enum Status {
+  EN_REPARACION
+  REPARADO
+  ENTREGADO
+  GARANTIA
+  DEVOLUCION
+}
 model Invoice {
   id            Int           @id @default(autoincrement())
   number        Int           @unique @default(autoincrement()) // Modificado
