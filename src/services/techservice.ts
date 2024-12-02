@@ -5,6 +5,20 @@ import { CreateTechServiceDTO, UpdateTechServiceDTO, TechServiceResponse } from 
 const API_URL = '/api/techservice';
 
 // Definir las interfaces para las respuestas de la API
+
+interface PaginationParams {
+  page: number;
+  limit: number;
+}
+
+interface SearchParams {
+  clientName?: string;
+  documentNumber?: string;
+  brand?: string;
+  color?: string;
+  warehouseId?: number;
+}
+
 interface ApiResponse<T> {
   data: T;
   status: number;
@@ -23,17 +37,44 @@ export const createTechService = async (data: CreateTechServiceDTO): Promise<Tec
   }
 };
 
-// ** Función para obtener todos los TechServices o uno específico **
-export const getTechServices = async (id?: number): Promise<TechServiceResponse[]> => {
+export async function fetchTechServices({
+  page = 1,
+  limit = 10,
+  clientName = '',
+  documentNumber = '',
+  brand = '',
+  color = '',
+  warehouseId = 1,
+}: PaginationParams & SearchParams) {
   try {
-    const url = id ? `${API_URL}?id=${id}` : API_URL;
-    const response = await axios.get<ApiResponse<TechServiceResponse[]>>(url);
-    return response.data.data;
+    // Construir la URL con los parámetros de búsqueda y paginación
+    const queryParams = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+      clientName,
+      documentNumber,
+      brand,
+      color,
+    }).toString();
+
+    const response = await fetch(`/api/techservice?${queryParams}`);
+    
+    if (!response.ok) {
+      throw new Error('Error fetching TechServices');
+    }
+
+    const data = await response.json();
+
+    return {
+      techServices: data.data,
+      pagination: data.pagination
+    };
   } catch (error) {
     console.error('Error fetching TechServices:', error);
-    throw new Error('Error fetching TechServices');
+    throw error;
   }
-};
+}
+
 
 // ** Función para actualizar un TechService **
 export const updateTechService = async (

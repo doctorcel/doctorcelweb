@@ -1,3 +1,4 @@
+import TechServiceList from "@/components/dashboard/tables/techServiceList";
 import TableRepair from "@/components/dashboard/techservice/tablerepair";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
@@ -19,7 +20,7 @@ export default function TechServiceMainPage() {
             </Link>
           </Button>
         </div>
-        <TableRepair />
+        <TechServiceList />
       </div>
     </>
   );
