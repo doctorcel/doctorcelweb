@@ -74,24 +74,26 @@ const ElegantTechServiceReceipt: React.FC<ReceiptProps> = ({
         <Button
           onClick={() => printWithPageSize("80mm 297mm")}
           variant="outline"
-        >
-          <PrinterIcon className="mr-2 h-4 w-4" /> Imprimir 80mm
-        </Button>
+          icon={<PrinterIcon className="mr-2 h-4 w-4" />}
+          text="Imprimir 80mm"
+        />
+
         <Button
           onClick={() => printWithPageSize("55mm 297mm")}
           variant="outline"
-        >
-          <PrinterIcon className="mr-2 h-4 w-4" /> Imprimir 55mm
-        </Button>
+          icon={<PrinterIcon className="mr-2 h-4 w-4" />}
+          text="Imprimir 55mm"
+        />
+
         <Button
           onClick={() => printWithPageSize("5.5in 8.5in")}
           variant="outline"
-        >
-          <PrinterIcon className="mr-2 h-4 w-4" /> Imprimir Media Carta
-        </Button>
+          icon={<PrinterIcon className="mr-2 h-4 w-4" />}
+          text="Imprimir Media Carta"
+        />
       </div>
 
-      <Card ref={componentRef} className="bg-white shadow-lg">
+      <Card ref={componentRef} className="bg-white text-gray-800 dark:bg-gray-800 dark:text-gray-200 shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <div className="flex items-center space-x-2">
             <img src={logoUrl} alt={companyName} className="h-10 w-auto" />
@@ -165,7 +167,7 @@ const ElegantTechServiceReceipt: React.FC<ReceiptProps> = ({
                 <span className="font-medium">Marca:</span> {techService.brand}
               </p>
               <p className="text-sm">
-                <span className="font-medium">Color:</span> {techService.color}
+                <span className="font-medium">Modelo:</span> {techService.color}
               </p>
               <p className="text-sm">
                 <span className="font-medium">IMEI/Serie:</span>{" "}

@@ -45,7 +45,7 @@ export default function NavBarDashboard() {
       <nav className={`
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         fixed md:static top-0 left-0 z-10 flex flex-col w-64 h-full 
-        bg-gray-400 dark:bg-gray-900 text-gray-800 dark:text-gray-200
+        bg-gray-300 dark:bg-gray-900 text-gray-800 dark:text-gray-200
         transition-transform duration-300 ease-in-out md:translate-x-0
       `}>
         <div className="p-6">
@@ -57,7 +57,7 @@ export default function NavBarDashboard() {
             className="w-auto h-auto"
           />
         </div>
-        <div className="flex-grow space-y-1 px-3">
+        <div className="flex-grow space-y-1 px-3 ">
           <NavLink href="/dashboard/productsmanagement" icon={<Package size={18} />} isActive={pathname === '/dashboard/productsmanagement'}>
             Productos
           </NavLink>
@@ -95,7 +95,7 @@ function NavLink({ href, children, icon, isActive }: { href: string, children: R
       className={`flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200
         ${isActive 
           ? 'bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white' 
-          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
+          : 'text-gray-800 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'
         }`}
     >
       {icon}

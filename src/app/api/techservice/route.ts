@@ -92,11 +92,14 @@ export async function GET(req: Request) {
       filters.warehouseId = parseInt(warehouseId);
     }
 
-    // Obtener los TechServices con los filtros y paginación
+    // Obtener los TechServices con los filtros y paginación, ordenados por createdAt (descendente)
     const techServices = await prisma.techService.findMany({
       where: filters,
       skip: skip,
       take: limit,
+      orderBy: {
+        createdAt: 'desc',  // Ordenar por fecha de creación más reciente
+      },
       include: {
         client: true, // Para incluir los datos del cliente
         technician: true, // Si es necesario, incluir los datos del técnico
@@ -125,6 +128,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ message: 'Error fetching TechService(s)' }, { status: 500 });
   }
 }
+
 
 
 // ** PATCH: Actualizar un TechService existente **

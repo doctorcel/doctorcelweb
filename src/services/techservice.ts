@@ -16,7 +16,7 @@ interface SearchParams {
   documentNumber?: string;
   brand?: string;
   color?: string;
-  warehouseId?: number;
+  warehouseId?: string;
 }
 
 interface ApiResponse<T> {
@@ -44,7 +44,7 @@ export async function fetchTechServices({
   documentNumber = '',
   brand = '',
   color = '',
-  warehouseId = 1,
+  warehouseId = '',
 }: PaginationParams & SearchParams) {
   try {
     // Construir la URL con los parámetros de búsqueda y paginación
@@ -55,6 +55,7 @@ export async function fetchTechServices({
       documentNumber,
       brand,
       color,
+      warehouseId,
     }).toString();
 
     const response = await fetch(`/api/techservice?${queryParams}`);
