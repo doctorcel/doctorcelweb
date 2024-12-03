@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { CldImage } from "next-cloudinary";
 import { Plus } from "lucide-react";
-import Button from "@/components/ui/button/button";
+import {Button} from "@/components/ui/button/button";
 import Modal from "@/components/ui/modal/modal";
 
 interface Article {

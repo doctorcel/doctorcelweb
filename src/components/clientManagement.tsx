@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import Button from "@/components/ui/button/button";
+import {Button} from "@/components/ui/button/button";
 import Modal from "@/components/ui/modal/modal";
 import ClientForm from "@/components/ui/form/newClientForm";
 import { Client } from "@/models/client";
