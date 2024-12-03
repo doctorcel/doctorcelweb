@@ -24,7 +24,7 @@ const TechServiceList = () => {
     page: currentPage,
     limit,
     ...searchParams,
-    warehouseId: warehouseFilter !== 'all' ? parseInt(warehouseFilter) : undefined, // Cambiar solo si no es "all"
+    warehouseId: warehouseFilter !== 'all' ? warehouseFilter : undefined, // Cambiar solo si no es "all"
   });
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
