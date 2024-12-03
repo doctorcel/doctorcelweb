@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Swal from "sweetalert2";
 import { createTechService } from "@/services/techservice";
 import { getClients } from "@/services/clientService";
 import { getWarehouses } from "@/services/warehouses";
 import { CreateTechServiceDTO } from "@/models/techservice";
 import { Status } from "@prisma/client";
 import { Button } from "@/components/ui/Button";
+import { getClientById } from "@/services/clientService";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import Link from "next/link";
 import { Client } from "@/models/client";
 import TechServiceReceipt from "../print/techservicereceipt";
@@ -35,6 +36,7 @@ const TechServiceForm = () => {
   const [warehouseId, setWarehouseId] = useState<number | null>(null);
   const [isPrinting, setIsPrinting] = useState<boolean>(false); // Estado para saber si estamos imprimiendo
   const [techServiceData, setTechServiceData] = useState<any | null>(null); // Estado para guardar la data del recibo
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const router = useRouter();
 
@@ -141,19 +143,42 @@ const TechServiceForm = () => {
 
     const newTechService = await createTechService(data);
     setTechServiceData(newTechService);
-    console.log(newTechService);
     if (newTechService) {
-      setIsPrinting(true);
-      handlePrintSuccess();
-    }
+      // Fetch client data
+      const clientData: Client = await getClientById(newTechService.clientId);
+
+      // Combine tech service and client data
+      const combinedData = {
+        ...newTechService,
+        client: {
+          name: clientData.name,
+          email: clientData.email,
+          phone: clientData.phone,
+          address: clientData.address,
+          taxId: clientData.taxId,
+          documentType: clientData.documentType,
+          document: clientData.document,
+          personType: clientData.personType,
+          regime: clientData.regime,
+          country: clientData.country,
+          department: clientData.department,
+          city: clientData.city,
+        },
+      };
+      console.log(combinedData);
+      setTechServiceData(combinedData);
+      setIsModalOpen(true);
   };
-  const handlePrintSuccess = () => {
-    if (techServiceData) {
-      router.push("/dashboard/techservice");
-      return;
-    }
-    // Después de imprimir el recibo, redirigir a la página del dashboard
-  };
+}
+
+const handlePrintSuccess = () => {
+  if (techServiceData) {
+    setIsModalOpen(false);
+    router.push("/dashboard/techservice");
+    return;
+  }
+  // Después de imprimir el recibo, redirigir a la página del dashboard
+};
 
   // Función que se llama cuando se selecciona un cliente
   const handleClientSelect = (client: Client) => {
@@ -166,10 +191,10 @@ const TechServiceForm = () => {
     <>
       <div className="flex justify-around items-center bg-gray-300 dark:bg-gray-900 dark:text-gray-300 p-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
             Crear orden de servicio
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="text-lg text-gray-600 dark:text-gray-400">
             En esta sección, puedes crear la orden de servicio, verifica que
             ingreses toda la información correctamente.
           </p>
@@ -178,7 +203,7 @@ const TechServiceForm = () => {
           <Link href={"/dashboard/techservice"}>Regresar</Link>
         </Button>
       </div>
-      <div className="max-w-4xl mx-auto p-6 bg-gray-100 rounded-lg shadow-lg mt-8">
+      <div className="max-w-4xl mx-auto p-6 bg-gray-100 rounded-lg shadow-lg mt-8 mb-8 dark:bg-gray-900 dark:text-gray-200">
         {errorMessage && (
           <div className="mb-6 p-4 bg-red-100 text-red-700 border-l-4 border-red-500 rounded">
             {errorMessage}
@@ -191,41 +216,43 @@ const TechServiceForm = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ">
             <div className="flex flex-col">
               <label
                 htmlFor="deviceType"
-                className="text-sm font-medium text-gray-700 mb-1"
+                className="text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
               >
                 Tipo de dispositivo
               </label>
               <select
                 id="deviceType"
                 value={deviceType}
+                required
                 onChange={(e) => setDeviceType(e.target.value as DeviceType)}
-                className="p-3 border border-gray-300 rounded-md bg-white shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                className="p-3 border border-gray-300 rounded-md bg-white shadow-sm focus:ring-2 focus:ring-gray-900 dark:bg-gray-800 dark:border-gray-700 focus:border-transparent"
               >
-                <option value="celular">Celular</option>
-                <option value="consola">Consola</option>
-                <option value="control">Control</option>
-                <option value="computador">Computador</option>
-                <option value="parlante">Parlante</option>
-                <option value="otro">Otro</option>
+                <option value="Celular">Celular</option>
+                <option value="Consola">Consola</option>
+                <option value="Control">Control</option>
+                <option value="Computador">Computador</option>
+                <option value="Parlante">Parlante</option>
+                <option value="Otro">Otro</option>
               </select>
             </div>
 
             <div className="flex flex-col">
               <label
                 htmlFor="brand"
-                className="text-sm font-medium text-gray-700 mb-1"
+                className="text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
               >
                 Marca
               </label>
               <select
                 id="brand"
                 value={brand}
+                required
                 onChange={(e) => setBrand(e.target.value)}
-                className="p-3 border border-gray-300 rounded-md bg-white shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                className="p-3 border border-gray-300 rounded-md bg-white shadow-sm dark:bg-gray-800 dark:border-gray-700  focus:ring-2 focus:ring-gray-900 focus:border-transparent"
               >
                 <option value="">Selecciona una marca</option>
                 {brandOptions.map((brandOption) => (
@@ -239,7 +266,7 @@ const TechServiceForm = () => {
             <div className="flex flex-col">
               <label
                 htmlFor="serialNumber"
-                className="text-sm font-medium text-gray-700 mb-1"
+                className="text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
               >
                 Número de serie / IMEI
               </label>
@@ -247,15 +274,16 @@ const TechServiceForm = () => {
                 type="text"
                 id="serialNumber"
                 value={serialNumber}
+                required
                 onChange={(e) => setSerialNumber(e.target.value)}
-                className="p-3 border border-gray-300 rounded-md bg-white shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                className="p-3 border border-gray-300 rounded-md dark:bg-gray-800 dark:border-gray-700  bg-white shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
               />
             </div>
 
             <div className="flex flex-col">
               <label
                 htmlFor="deliveryDate"
-                className="text-sm font-medium text-gray-700 mb-1"
+                className="text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
               >
                 Fecha de posible entrega
               </label>
@@ -263,15 +291,16 @@ const TechServiceForm = () => {
                 type="date"
                 id="deliveryDate"
                 value={deliveryDate}
+                required
                 onChange={(e) => setDeliveryDate(e.target.value)}
-                className="p-3 border border-gray-300 rounded-md bg-white shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                className="p-3 border border-gray-300 rounded-md dark:bg-gray-800 dark:border-gray-700  bg-white shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
               />
             </div>
 
             <div className="flex flex-col">
               <label
                 htmlFor="color"
-                className="text-sm font-medium text-gray-700 mb-1"
+                className="text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
               >
                 Modelo
               </label>
@@ -279,24 +308,26 @@ const TechServiceForm = () => {
                 type="text"
                 id="color"
                 value={color}
+                required
                 onChange={(e) => setColor(e.target.value)}
-                className="p-3 border border-gray-300 rounded-md bg-white shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                className="p-3 border border-gray-300 rounded-md dark:bg-gray-800 dark:border-gray-700  bg-white shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
               />
             </div>
 
             <div className="flex flex-col">
               <label
                 htmlFor="password"
-                className="text-sm font-medium text-gray-700 mb-1"
+                className="text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
               >
                 Contraseña
               </label>
               <input
                 type="text"
                 id="password"
+                required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="p-3 border border-gray-300 rounded-md bg-white shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                className="p-3 border border-gray-300 rounded-md dark:bg-gray-800 dark:border-gray-700  bg-white shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
               />
             </div>
 
@@ -304,7 +335,7 @@ const TechServiceForm = () => {
             <div className="flex flex-col">
               <label
                 htmlFor="clientSearch"
-                className="text-sm font-medium text-gray-700 mb-1"
+                className="text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
               >
                 Buscar Cliente
               </label>
@@ -312,8 +343,9 @@ const TechServiceForm = () => {
                 id="clientSearch"
                 type="text"
                 value={searchQuery}
+                required
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="p-3 border border-gray-300 rounded-md bg-white shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                className="p-3 border border-gray-300 rounded-md dark:bg-gray-800 dark:border-gray-700  bg-white shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 placeholder="Escribe el nombre del cliente"
               />
               {/* Mostrar los resultados de la búsqueda */}
@@ -322,7 +354,7 @@ const TechServiceForm = () => {
                   {filteredClients.map((client) => (
                     <div
                       key={client.id}
-                      className="p-2 hover:bg-gray-200 cursor-pointer"
+                      className="p-2 hover:bg-gray-200 cursor-pointer dark:bg-gray-800 dark:border-gray-700 "
                       onClick={() => handleClientSelect(client)} // Seleccionar cliente
                     >
                       {client.name}
@@ -336,15 +368,16 @@ const TechServiceForm = () => {
             <div className="flex flex-col">
               <label
                 htmlFor="warehouseId"
-                className="text-sm font-medium text-gray-700 mb-1"
+                className="text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
               >
                 Bodega
               </label>
               <select
                 id="warehouseId"
                 value={warehouseId || ""}
+                required
                 onChange={(e) => setWarehouseId(Number(e.target.value))}
-                className="p-3 border border-gray-300 rounded-md bg-white shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                className="p-3 border border-gray-300 rounded-md dark:bg-gray-800 dark:border-gray-700  bg-white shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
               >
                 <option value="">Selecciona una bodega</option>
                 {warehouses.map((warehouse) => (
@@ -359,15 +392,16 @@ const TechServiceForm = () => {
           <div className="flex flex-col">
             <label
               htmlFor="observations"
-              className="text-sm font-medium text-gray-700 mb-1"
+              className="text-sm font-medium text-gray-700 dark:text-gray-100 mb-1"
             >
               Observaciones
             </label>
             <textarea
               id="observations"
               value={observations}
+              required
               onChange={(e) => setObservations(e.target.value)}
-              className="p-3 border border-gray-300 rounded-md bg-white shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+              className="p-3 border border-gray-300 rounded-md dark:bg-gray-800 dark:border-gray-700  bg-white shadow-sm focus:ring-2 focus:ring-gray-900 focus:border-transparent"
               rows={4}
             />
           </div>
@@ -375,7 +409,7 @@ const TechServiceForm = () => {
           <div className="mt-8">
             <button
               type="submit"
-              className="w-full py-3 px-4 bg-gray-900 text-white font-semibold rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 transition-colors duration-300"
+              className="w-full py-3 px-4 bg-gray-900 text-white font-semibold rounded-md dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 transition-colors duration-300"
             >
               Crear Orden
             </button>
@@ -384,16 +418,20 @@ const TechServiceForm = () => {
       </div>
 
       {/* Si los datos del recibo están disponibles y estamos imprimiendo, renderizar el recibo */}
-      {techServiceData && isPrinting && (
-        <div className="mt-8">
+      {techServiceData && (
+        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Recibo de Servicio Técnico</DialogTitle>
+          </DialogHeader>
           <TechServiceReceipt
-            techService={techServiceData}
-            logoUrl="/logo.png" // Asegúrate de pasar la URL correcta del logo
-            companyName="Doctor Cel"
-            companyContact="contacto@doctorcel.co"
-            onPrintSuccess={handlePrintSuccess} // Llamamos a la función para redirigir después de imprimir
-          />
-        </div>
+              techService={techServiceData}
+              logoUrl="/logo.png"
+              companyName="Doctor Cel"
+              companyContact="contacto@doctorcel.co"
+              onPrintSuccess={handlePrintSuccess}/>
+        </DialogContent>
+      </Dialog>
       )}
     </>
   );

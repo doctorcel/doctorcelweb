@@ -49,3 +49,14 @@ export const updateClient = async (clientId: number, updatedData: Partial<Client
 
   return response.json();
 };
+
+// Obtener cliente por ID
+export const getClientById = async (clientId: number): Promise<Client> => {
+  const response = await fetch(`${API_URL}/${clientId}`);
+
+  if (!response.ok) {
+    throw new Error('Error al obtener el cliente');
+  }
+
+  return response.json();
+};
