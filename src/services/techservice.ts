@@ -45,9 +45,10 @@ export async function fetchTechServices({
   brand = '',
   color = '',
   warehouseId = '',
-}: PaginationParams & SearchParams) {
+  status = '',  // Agregar el parámetro 'status' para filtrar por estado
+}: PaginationParams & SearchParams & { status?: string }) {
   try {
-    // Construir la URL con los parámetros de búsqueda y paginación
+    // Construir la URL con los parámetros de búsqueda y paginación, incluyendo el 'status'
     const queryParams = new URLSearchParams({
       page: String(page),
       limit: String(limit),
@@ -56,6 +57,7 @@ export async function fetchTechServices({
       brand,
       color,
       warehouseId,
+      status,  // Agregar el parámetro 'status' a los query params
     }).toString();
 
     const response = await fetch(`/api/techservice?${queryParams}`);
@@ -67,7 +69,7 @@ export async function fetchTechServices({
     const data = await response.json();
 
     return {
-      techServices: data.data,
+      techServices: data.data.filter((item: TechServiceResponse) => item.active === 'ENABLED'),  // Filtramos solo los servicios activos
       pagination: data.pagination
     };
   } catch (error) {

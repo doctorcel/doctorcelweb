@@ -45,6 +45,7 @@ export async function GET(req: Request) {
   const brand = url.searchParams.get('brand') || '';
   const color = url.searchParams.get('color') || '';
   const warehouseId = url.searchParams.get('warehouseId');
+  const status = url.searchParams.get('status');  // Filtro por status
 
   // Parámetros de paginación
   const page = parseInt(url.searchParams.get('page') || '1');
@@ -53,7 +54,9 @@ export async function GET(req: Request) {
 
   try {
     // Construir el filtro de búsqueda dinámicamente
-    const filters: any = {};
+    const filters: any = {
+      active: 'ENABLED',  // Solo TechServices activos
+    };
 
     if (clientName) {
       filters.client = {
@@ -92,6 +95,10 @@ export async function GET(req: Request) {
       filters.warehouseId = parseInt(warehouseId);
     }
 
+    if (status) {
+      filters.status = status;  // Filtro por status
+    }
+
     // Obtener los TechServices con los filtros y paginación, ordenados por createdAt (descendente)
     const techServices = await prisma.techService.findMany({
       where: filters,
@@ -126,43 +133,5 @@ export async function GET(req: Request) {
   } catch (error) {
     console.error('Error fetching TechService(s):', error);
     return NextResponse.json({ message: 'Error fetching TechService(s)' }, { status: 500 });
-  }
-}
-
-
-
-// ** PATCH: Actualizar un TechService existente **
-export async function PATCH(req: Request) {
-  const url = new URL(req.url);
-  const id = url.pathname.split('/').pop();
-
-  const data: UpdateTechServiceDTO = await req.json();
-
-  try {
-    if (!id || isNaN(parseInt(id))) {
-      return NextResponse.json({ message: 'Valid TechService ID is required' }, { status: 400 });
-    }
-
-    // Actualizar el TechService
-    const techService = await prisma.techService.update({
-      where: { id: parseInt(id) }, // Usamos parseInt(id) para asegurarnos de que sea un número
-      data: {
-        status: data.status,
-        deviceType: data.deviceType,
-        serialNumber: data.serialNumber,
-        technicianId: data.technicianId,
-        warehouseId: data.warehouseId,
-        deliveryDate: data.deliveryDate ? new Date(data.deliveryDate) : undefined,
-        brand: data.brand,
-        color: data.color,
-        observations: data.observations,
-        password: data.password,
-      },
-    });
-
-    return NextResponse.json(techService, { status: 200 });
-  } catch (error) {
-    console.error('Error updating TechService:', error);
-    return NextResponse.json({ message: 'Error updating TechService' }, { status: 500 });
   }
 }

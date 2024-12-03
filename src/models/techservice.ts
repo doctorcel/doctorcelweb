@@ -30,6 +30,7 @@ export interface UpdateTechServiceDTO {
 }
 
 export interface TechServiceResponse {
+  active: string;
   id: number;
   status: Status;
   deviceType: string;

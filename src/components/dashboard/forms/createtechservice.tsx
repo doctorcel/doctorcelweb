@@ -9,10 +9,16 @@ import { CreateTechServiceDTO } from "@/models/techservice";
 import { Status } from "@prisma/client";
 import { Button } from "@/components/ui/Button";
 import { getClientById } from "@/services/clientService";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import Link from "next/link";
 import { Client } from "@/models/client";
 import TechServiceReceipt from "../print/techservicereceipt";
+import CreateClient from "@/components/ui/createClient";
 
 type DeviceType =
   | "celular"
@@ -168,17 +174,17 @@ const TechServiceForm = () => {
       console.log(combinedData);
       setTechServiceData(combinedData);
       setIsModalOpen(true);
+    }
   };
-}
 
-const handlePrintSuccess = () => {
-  if (techServiceData) {
-    setIsModalOpen(false);
-    router.push("/dashboard/techservice");
-    return;
-  }
-  // Después de imprimir el recibo, redirigir a la página del dashboard
-};
+  const handlePrintSuccess = () => {
+    if (techServiceData) {
+      setIsModalOpen(false);
+      router.push("/dashboard/techservice");
+      return;
+    }
+    // Después de imprimir el recibo, redirigir a la página del dashboard
+  };
 
   // Función que se llama cuando se selecciona un cliente
   const handleClientSelect = (client: Client) => {
@@ -190,7 +196,7 @@ const handlePrintSuccess = () => {
   return (
     <>
       <div className="flex justify-around items-center bg-gray-300 dark:bg-gray-900 dark:text-gray-300 p-8">
-        <div>
+        <div className="ml-12 mr-6">
           <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
             Crear orden de servicio
           </h1>
@@ -199,9 +205,12 @@ const handlePrintSuccess = () => {
             ingreses toda la información correctamente.
           </p>
         </div>
-        <Button className="bg-blue-900 dark:bg-green-900 text-gray-100 dark:hover:bg-green-700 dark:text-white">
-          <Link href={"/dashboard/techservice"}>Regresar</Link>
-        </Button>
+        <div className="flex flex-col gap-3">
+          <Button className="bg-blue-900 dark:bg-green-900 text-gray-100 dark:hover:bg-green-700 dark:text-white">
+            <Link href={"/dashboard/techservice"}>Regresar</Link>
+          </Button>
+          <CreateClient />
+        </div>
       </div>
       <div className="max-w-4xl mx-auto p-6 bg-gray-100 rounded-lg shadow-lg mt-8 mb-8 dark:bg-gray-900 dark:text-gray-200">
         {errorMessage && (
@@ -420,18 +429,19 @@ const handlePrintSuccess = () => {
       {/* Si los datos del recibo están disponibles y estamos imprimiendo, renderizar el recibo */}
       {techServiceData && (
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>Recibo de Servicio Técnico</DialogTitle>
-          </DialogHeader>
-          <TechServiceReceipt
+          <DialogContent className="max-w-4xl">
+            <DialogHeader>
+              <DialogTitle>Recibo de Servicio Técnico</DialogTitle>
+            </DialogHeader>
+            <TechServiceReceipt
               techService={techServiceData}
               logoUrl="/logo.png"
               companyName="Doctor Cel"
               companyContact="contacto@doctorcel.co"
-              onPrintSuccess={handlePrintSuccess}/>
-        </DialogContent>
-      </Dialog>
+              onPrintSuccess={handlePrintSuccess}
+            />
+          </DialogContent>
+        </Dialog>
       )}
     </>
   );

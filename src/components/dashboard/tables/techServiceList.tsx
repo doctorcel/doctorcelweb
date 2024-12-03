@@ -1,51 +1,70 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react'
-import { useTechServices } from '@/hooks/useTechServices'
-import { Input } from "@/components/ui/Input"
-import { Button } from "@/components/ui/Button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import React, { useState } from "react";
+import { useTechServices } from "@/hooks/useTechServices";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const TechServiceList = () => {
   const [searchParams, setSearchParams] = useState({
-    clientName: '',
-    documentNumber: '',
-    brand: '',
-    color: '',
-  })
+    clientName: "",
+    documentNumber: "",
+    brand: "",
+    color: "",
+  });
 
-  const [warehouseFilter, setWarehouseFilter] = useState<string>('all');
-  const [currentPage, setCurrentPage] = useState(1)
-  const limit = 10
+  const [warehouseFilter, setWarehouseFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>(""); // Nuevo estado para el filtrado por estado
+  const [currentPage, setCurrentPage] = useState(1);
+  const limit = 10;
 
   const { techServices, pagination, loading, error } = useTechServices({
     page: currentPage,
     limit,
     ...searchParams,
-    warehouseId: warehouseFilter !== 'all' ? warehouseFilter : undefined, // Cambiar solo si no es "all"
+    warehouseId: warehouseFilter !== "all" ? warehouseFilter : undefined,
+    status: statusFilter, // Pasar el filtro de estado
   });
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setSearchParams(prev => ({
+    const { name, value } = e.target;
+    setSearchParams((prev) => ({
       ...prev,
       [name]: value,
-    }))
-  }
-  const handleWarehouseFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    console.log("Warehouse Filter Changed: ", e.target.value); // Verifica que el valor cambie
+    }));
+  };
+
+  const handleWarehouseFilterChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     setWarehouseFilter(e.target.value);
     setCurrentPage(1); // Reset to first page when changing filter
   };
+
+  const handleStatusFilterChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    // Nueva función para manejar el cambio de estado
+    setStatusFilter(e.target.value);
+    setCurrentPage(1); // Reset to first page when changing filter
+  };
+
   const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage)
-  }
+    setCurrentPage(newPage);
+  };
 
   return (
     <div className="container mx-auto px-8 py-8">
-      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Input
           type="text"
@@ -76,31 +95,58 @@ const TechServiceList = () => {
           onChange={handleSearchChange}
         />
       </div>
+      <div className="flex gap-8">
+        <div className="mb-6">
+          <label
+            htmlFor="warehouseFilter"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Filtrar por bodega:
+          </label>
+          <select
+            id="warehouseFilter"
+            name="warehouseFilter"
+            value={warehouseFilter}
+            onChange={handleWarehouseFilterChange}
+            className="block w-40 text-center py-2 rounded-md border-gray-300 shadow-sm bg-gray-300 dark:bg-green-900/80 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+          >
+            <option value="1">Barichara</option>
+            <option value="2">Arrayanes</option>
+          </select>
+        </div>
 
-      <div className="mb-6">
-        <label htmlFor="warehouseFilter" className="block text-sm font-medium text-gray-700 mb-2">
-          Filtrar por bodega:
-        </label>
-        <select
-          id="warehouseFilter"
-          name="warehouseFilter"
-          value={warehouseFilter}
-          onChange={handleWarehouseFilterChange}
-          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-        >
-          <option value="1">Barichara</option>
-          <option value="2">Arrayanes</option>
-        </select>
+        {/* Nuevo filtro por estado */}
+        <div className="mb-6">
+          <label
+            htmlFor="statusFilter"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Filtrar por estado:
+          </label>
+          <select
+            id="statusFilter"
+            name="statusFilter"
+            value={statusFilter}
+            onChange={handleStatusFilterChange}
+            className="block w-40 text-center py-2 rounded-md border-gray-300 shadow-sm bg-gray-300 dark:bg-green-900/80 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+          >
+            <option value="">Todos</option>
+            <option value="EN_REPARACION">EN REPARACION</option>
+            <option value="REPARADO">REPARADO</option>
+            <option value="ENTREGADO">ENTREGADO</option>
+            <option value="GARANTIA">GARANTIA</option>
+            <option value="DEVOLUCION">DEVOLUCION</option>
+          </select>
+        </div>
       </div>
 
-      {loading && <p className="text-center text-gray-900">Cargando...</p>}
       {error && <p className="text-center text-red-600">{error}</p>}
 
       {/* Desktop view */}
       <div className="hidden md:block">
-        <Table>
+        <Table >
           <TableHeader>
-            <TableRow>
+            <TableRow className="bg-gray-300 rounded">
               <TableHead>Cliente</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead>Tipo</TableHead>
@@ -121,9 +167,15 @@ const TechServiceList = () => {
                 <TableCell>{techService.brand}</TableCell>
                 <TableCell>{techService.color}</TableCell>
                 <TableCell>
-                  {techService.warehouseId === 1 ? 'Barichara' : techService.warehouseId === 2 ? 'Arrayanes' : techService.warehouseId}
+                  {techService.warehouseId === 1
+                    ? "Barichara"
+                    : techService.warehouseId === 2
+                    ? "Arrayanes"
+                    : techService.warehouseId}
                 </TableCell>
-                <TableCell>{new Date(techService.deliveryDate).toLocaleDateString()}</TableCell>
+                <TableCell>
+                  {new Date(techService.deliveryDate).toLocaleDateString()}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -138,13 +190,33 @@ const TechServiceList = () => {
               <CardTitle>{techService.client.name}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p><strong>Estado:</strong> {techService.status}</p>
-              <p><strong>Tipo:</strong> {techService.deviceType}</p>
-              <p><strong>IMEI/Serie:</strong> {techService.serialNumber}</p>
-              <p><strong>Marca:</strong> {techService.brand}</p>
-              <p><strong>Modelo:</strong> {techService.color}</p>
-              <p><strong>Bodega:</strong> {techService.warehouseId === 1 ? 'Barichara' : techService.warehouseId === 2 ? 'Arrayanes' : techService.warehouseId}</p>
-              <p><strong>Fecha estimada:</strong> {new Date(techService.deliveryDate).toLocaleDateString()}</p>
+              <p>
+                <strong>Estado:</strong> {techService.status}
+              </p>
+              <p>
+                <strong>Tipo:</strong> {techService.deviceType}
+              </p>
+              <p>
+                <strong>IMEI/Serie:</strong> {techService.serialNumber}
+              </p>
+              <p>
+                <strong>Marca:</strong> {techService.brand}
+              </p>
+              <p>
+                <strong>Modelo:</strong> {techService.color}
+              </p>
+              <p>
+                <strong>Bodega:</strong>{" "}
+                {techService.warehouseId === 1
+                  ? "Barichara"
+                  : techService.warehouseId === 2
+                  ? "Arrayanes"
+                  : techService.warehouseId}
+              </p>
+              <p>
+                <strong>Fecha estimada:</strong>{" "}
+                {new Date(techService.deliveryDate).toLocaleDateString()}
+              </p>
             </CardContent>
           </Card>
         ))}
@@ -158,8 +230,8 @@ const TechServiceList = () => {
         >
           <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
         </Button>
-        <span className="text-gray-900">
-          Pagina {currentPage} de {pagination.totalPages}
+        <span className="text-gray-900 dark:text-gray-200">
+          Página {currentPage} de {pagination.totalPages}
         </span>
         <Button
           onClick={() => handlePageChange(currentPage + 1)}
@@ -170,8 +242,7 @@ const TechServiceList = () => {
         </Button>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default TechServiceList
-
+export default TechServiceList;

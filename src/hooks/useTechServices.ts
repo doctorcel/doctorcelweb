@@ -16,6 +16,7 @@ interface UseTechServicesParams {
   brand?: string;
   color?: string;
   warehouseId?: string;
+  status: string;
 }
 
 export function useTechServices({
@@ -25,7 +26,8 @@ export function useTechServices({
   documentNumber = '',
   brand = '',
   color = '',
-  warehouseId
+  warehouseId,
+  status
 }: UseTechServicesParams) {
   const [techServices, setTechServices] = useState<any[]>([]);
   const [pagination, setPagination] = useState<Pagination>({
@@ -50,6 +52,7 @@ export function useTechServices({
           brand,
           color,
           warehouseId,
+          status
         });
         setTechServices(techServices);
         setPagination(pagination);
@@ -61,7 +64,7 @@ export function useTechServices({
     };
 
     loadTechServices();
-  }, [page, limit, clientName, documentNumber, brand, color, warehouseId]);
+  }, [page, limit, clientName, documentNumber, brand, color, warehouseId, status]);
 
   return {
     techServices,
