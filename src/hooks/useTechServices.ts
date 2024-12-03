@@ -15,7 +15,7 @@ interface UseTechServicesParams {
   documentNumber?: string;
   brand?: string;
   color?: string;
-  warehouseId?: number;
+  warehouseId?: string;
 }
 
 export function useTechServices({
