@@ -45,3 +45,21 @@ export interface TechServiceResponse {
   password: string | null;
 }
 
+export interface TechServiceDetails {
+  id: number;
+  client: {
+    name: string;
+    email: string;
+    phone: string;
+  };
+  status: string;
+  deviceType: string;
+  serialNumber: string;
+  brand: string;
+  color: string;
+  warehouseId: number;
+  deliveryDate: string;
+  observations: string | null;
+  password: string | null;
+}
+

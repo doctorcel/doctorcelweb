@@ -14,6 +14,9 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import TechServiceModal from "@/components/modal/techServiceModal";
+import { TechServiceDetails } from "@/models/techservice";
+import { useRouter } from "next/navigation";
 
 const TechServiceList = () => {
   const [searchParams, setSearchParams] = useState({
@@ -26,6 +29,8 @@ const TechServiceList = () => {
   const [warehouseFilter, setWarehouseFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>(""); // Nuevo estado para el filtrado por estado
   const [currentPage, setCurrentPage] = useState(1);
+  const router = useRouter();
+  const [selectedTechService, setSelectedTechService] = useState<TechServiceDetails | null>(null); // Establecer el tipo correcto
   const limit = 10;
 
   const { techServices, pagination, loading, error } = useTechServices({
@@ -62,6 +67,16 @@ const TechServiceList = () => {
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
   };
+
+    // Función para manejar el clic en un TechService
+    const handleTechServiceClick = (techService: TechServiceDetails) => {
+      setSelectedTechService(techService); // Establecer el TechService seleccionado
+    };
+  
+    const handleCloseModal = () => {
+      setSelectedTechService(null); // Cerrar el modal
+      router.refresh();
+    };
 
   return (
     <div className="container mx-auto px-8 py-8">
@@ -110,6 +125,7 @@ const TechServiceList = () => {
             onChange={handleWarehouseFilterChange}
             className="block w-40 text-center py-2 rounded-md border-gray-300 shadow-sm bg-gray-300 dark:bg-green-900/80 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
           >
+            <option value="">Todos</option>
             <option value="1">Barichara</option>
             <option value="2">Arrayanes</option>
           </select>
@@ -142,9 +158,13 @@ const TechServiceList = () => {
 
       {error && <p className="text-center text-red-600">{error}</p>}
 
-      {/* Desktop view */}
-      <div className="hidden md:block">
-        <Table >
+      {/* Mostrar el modal si existe un TechService seleccionado */}
+      {selectedTechService && (
+        <TechServiceModal techService={selectedTechService} onClose={handleCloseModal} />
+      )}
+
+      <div className="md:block">
+        <Table>
           <TableHeader>
             <TableRow className="bg-gray-300 rounded">
               <TableHead>Cliente</TableHead>
@@ -159,7 +179,11 @@ const TechServiceList = () => {
           </TableHeader>
           <TableBody>
             {techServices.map((techService) => (
-              <TableRow key={techService.id}>
+              <TableRow
+                key={techService.id}
+                onClick={() => handleTechServiceClick(techService)} // Agregar evento de clic
+                className="cursor-pointer"
+              >
                 <TableCell>{techService.client.name}</TableCell>
                 <TableCell>{techService.status}</TableCell>
                 <TableCell>{techService.deviceType}</TableCell>

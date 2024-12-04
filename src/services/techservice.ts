@@ -92,3 +92,42 @@ export const updateTechService = async (
     throw new Error('Error updating TechService');
   }
 };
+
+// Función para obtener el detalle del TechService y su Client
+export const getTechServiceDetails = async (id: number) => {
+  try {
+    const response = await fetch(`/api/techservice/${id}`);
+    if (!response.ok) {
+      throw new Error('No se pudo obtener el TechService');
+    }
+
+    const data = await response.json();
+    return data;  // Devuelve los detalles del TechService y el Cliente
+  } catch (error) {
+    console.error('Error al obtener el TechService:', error);
+    throw error;
+  }
+};
+
+// Función para actualizar el status de un TechService
+export const updateTechServiceStatus = async (id: number, status: string) => {
+  try {
+    const response = await fetch(`/api/techservice/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ status }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Error al actualizar el TechService');
+    }
+
+    const data = await response.json();
+    return data;  // Devuelve el TechService actualizado
+  } catch (error) {
+    console.error('Error al actualizar el TechService:', error);
+    throw error;
+  }
+};
