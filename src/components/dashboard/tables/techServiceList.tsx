@@ -13,10 +13,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import TechServiceModal from "@/components/modal/techServiceModal";
 import { TechServiceDetails } from "@/models/techservice";
 import { useRouter } from "next/navigation";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const TechServiceList = () => {
   const [searchParams, setSearchParams] = useState({
@@ -27,10 +28,10 @@ const TechServiceList = () => {
   });
 
   const [warehouseFilter, setWarehouseFilter] = useState<string>("all");
-  const [statusFilter, setStatusFilter] = useState<string>(""); // Nuevo estado para el filtrado por estado
+  const [statusFilter, setStatusFilter] = useState<string>("");
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
-  const [selectedTechService, setSelectedTechService] = useState<TechServiceDetails | null>(null); // Establecer el tipo correcto
+  const [selectedTechService, setSelectedTechService] = useState<TechServiceDetails | null>(null);
   const limit = 10;
 
   const { techServices, pagination, loading, error } = useTechServices({
@@ -38,7 +39,7 @@ const TechServiceList = () => {
     limit,
     ...searchParams,
     warehouseId: warehouseFilter !== "all" ? warehouseFilter : undefined,
-    status: statusFilter, // Pasar el filtro de estado
+    status: statusFilter,
   });
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,38 +50,32 @@ const TechServiceList = () => {
     }));
   };
 
-  const handleWarehouseFilterChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    setWarehouseFilter(e.target.value);
-    setCurrentPage(1); // Reset to first page when changing filter
+  const handleWarehouseFilterChange = (value: string) => {
+    setWarehouseFilter(value);
+    setCurrentPage(1);
   };
 
-  const handleStatusFilterChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    // Nueva función para manejar el cambio de estado
-    setStatusFilter(e.target.value);
-    setCurrentPage(1); // Reset to first page when changing filter
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+    setCurrentPage(1);
   };
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
   };
 
-    // Función para manejar el clic en un TechService
-    const handleTechServiceClick = (techService: TechServiceDetails) => {
-      setSelectedTechService(techService); // Establecer el TechService seleccionado
-    };
-  
-    const handleCloseModal = () => {
-      setSelectedTechService(null); // Cerrar el modal
-      router.refresh();
-    };
+  const handleTechServiceClick = (techService: TechServiceDetails) => {
+    setSelectedTechService(techService);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedTechService(null);
+    router.refresh();
+  };
 
   return (
-    <div className="container mx-auto px-8 py-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div className="container mx-auto px-4 py-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Input
           type="text"
           name="clientName"
@@ -110,63 +105,52 @@ const TechServiceList = () => {
           onChange={handleSearchChange}
         />
       </div>
-      <div className="flex gap-8">
-        <div className="mb-6">
-          <label
-            htmlFor="warehouseFilter"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        <div>
+          <label htmlFor="warehouseFilter" className="block text-sm font-medium text-gray-700 mb-2">
             Filtrar por bodega:
           </label>
-          <select
-            id="warehouseFilter"
-            name="warehouseFilter"
-            value={warehouseFilter}
-            onChange={handleWarehouseFilterChange}
-            className="block w-40 text-center py-2 rounded-md border-gray-300 shadow-sm bg-gray-300 dark:bg-green-900/80 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-          >
-            <option value="">Todos</option>
-            <option value="1">Barichara</option>
-            <option value="2">Arrayanes</option>
-          </select>
+          <Select onValueChange={handleWarehouseFilterChange} defaultValue={warehouseFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccionar bodega" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              <SelectItem value="1">Barichara</SelectItem>
+              <SelectItem value="2">Arrayanes</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-
-        {/* Nuevo filtro por estado */}
-        <div className="mb-6">
-          <label
-            htmlFor="statusFilter"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
+        <div>
+          <label htmlFor="statusFilter" className="block text-sm font-medium text-gray-700 mb-2">
             Filtrar por estado:
           </label>
-          <select
-            id="statusFilter"
-            name="statusFilter"
-            value={statusFilter}
-            onChange={handleStatusFilterChange}
-            className="block w-40 text-center py-2 rounded-md border-gray-300 shadow-sm bg-gray-300 dark:bg-green-900/80 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-          >
-            <option value="">Todos</option>
-            <option value="EN_REPARACION">EN REPARACION</option>
-            <option value="REPARADO">REPARADO</option>
-            <option value="ENTREGADO">ENTREGADO</option>
-            <option value="GARANTIA">GARANTIA</option>
-            <option value="DEVOLUCION">DEVOLUCION</option>
-          </select>
+          <Select onValueChange={handleStatusFilterChange} defaultValue={statusFilter}>
+            <SelectTrigger>
+              <SelectValue placeholder="Seleccionar estado" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Todos</SelectItem>
+              <SelectItem value="EN_REPARACION">EN REPARACION</SelectItem>
+              <SelectItem value="REPARADO">REPARADO</SelectItem>
+              <SelectItem value="ENTREGADO">ENTREGADO</SelectItem>
+              <SelectItem value="GARANTIA">GARANTIA</SelectItem>
+              <SelectItem value="DEVOLUCION">DEVOLUCION</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
       {error && <p className="text-center text-red-600">{error}</p>}
 
-      {/* Mostrar el modal si existe un TechService seleccionado */}
       {selectedTechService && (
         <TechServiceModal techService={selectedTechService} onClose={handleCloseModal} />
       )}
 
-      <div className="md:block">
+      <div className="hidden md:block overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-300 rounded">
+            <TableRow className="bg-gray-300 dark:bg-gray-800">
               <TableHead>Cliente</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead>Tipo</TableHead>
@@ -181,8 +165,8 @@ const TechServiceList = () => {
             {techServices.map((techService) => (
               <TableRow
                 key={techService.id}
-                onClick={() => handleTechServiceClick(techService)} // Agregar evento de clic
-                className="cursor-pointer"
+                onClick={() => handleTechServiceClick(techService)}
+                className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
               >
                 <TableCell>{techService.client.name}</TableCell>
                 <TableCell>{techService.status}</TableCell>
@@ -206,51 +190,33 @@ const TechServiceList = () => {
         </Table>
       </div>
 
-      {/* Mobile view */}
       <div className="md:hidden space-y-4">
         {techServices.map((techService) => (
-          <Card key={techService.id}>
+          <Card key={techService.id} onClick={() => handleTechServiceClick(techService)} className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700">
             <CardHeader>
               <CardTitle>{techService.client.name}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p>
-                <strong>Estado:</strong> {techService.status}
-              </p>
-              <p>
-                <strong>Tipo:</strong> {techService.deviceType}
-              </p>
-              <p>
-                <strong>IMEI/Serie:</strong> {techService.serialNumber}
-              </p>
-              <p>
-                <strong>Marca:</strong> {techService.brand}
-              </p>
-              <p>
-                <strong>Modelo:</strong> {techService.color}
-              </p>
-              <p>
-                <strong>Bodega:</strong>{" "}
-                {techService.warehouseId === 1
-                  ? "Barichara"
-                  : techService.warehouseId === 2
-                  ? "Arrayanes"
-                  : techService.warehouseId}
-              </p>
-              <p>
-                <strong>Fecha estimada:</strong>{" "}
-                {new Date(techService.deliveryDate).toLocaleDateString()}
-              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <p><strong>Estado:</strong> {techService.status}</p>
+                <p><strong>Tipo:</strong> {techService.deviceType}</p>
+                <p><strong>IMEI/Serie:</strong> {techService.serialNumber}</p>
+                <p><strong>Marca:</strong> {techService.brand}</p>
+                <p><strong>Modelo:</strong> {techService.color}</p>
+                <p><strong>Bodega:</strong> {techService.warehouseId === 1 ? "Barichara" : techService.warehouseId === 2 ? "Arrayanes" : techService.warehouseId}</p>
+                <p><strong>Fecha estimada:</strong> {new Date(techService.deliveryDate).toLocaleDateString()}</p>
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
-      <div className="flex justify-between items-center mt-6">
+      <div className="flex flex-col sm:flex-row justify-between items-center mt-6 space-y-4 sm:space-y-0">
         <Button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
           variant="outline"
+          className="w-full sm:w-auto"
         >
           <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
         </Button>
@@ -261,6 +227,7 @@ const TechServiceList = () => {
           onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === pagination.totalPages}
           variant="outline"
+          className="w-full sm:w-auto"
         >
           Siguiente <ChevronRight className="ml-2 h-4 w-4" />
         </Button>
@@ -270,3 +237,4 @@ const TechServiceList = () => {
 };
 
 export default TechServiceList;
+

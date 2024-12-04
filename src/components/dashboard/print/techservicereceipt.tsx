@@ -1,9 +1,9 @@
 import React, { useRef, useCallback } from "react";
 import { useReactToPrint } from "react-to-print";
-import { Button } from "@/components/ui/button/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { PrinterIcon } from "lucide-react";
+import { PrinterIcon } from 'lucide-react';
 
 interface ReceiptProps {
   techService: {
@@ -56,11 +56,21 @@ const ElegantTechServiceReceipt: React.FC<ReceiptProps> = ({
     (pageSize: string) => {
       const style = document.createElement("style");
       style.textContent = `
-      @page {
-        size: ${pageSize};
-        margin: 10mm;
-      }
-    `;
+        @page {
+          size: ${pageSize};
+          margin: 0;
+        }
+        @media print {
+          body {
+            margin: 0;
+            padding: 0;
+          }
+          .receipt-content {
+            width: 100%;
+            padding: 5mm;
+          }
+        }
+      `;
       document.head.appendChild(style);
       handlePrint();
       document.head.removeChild(style);
@@ -69,130 +79,75 @@ const ElegantTechServiceReceipt: React.FC<ReceiptProps> = ({
   );
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
+    <div className="max-w-sm mx-auto p-4">
       <div className="flex justify-between mb-6">
         <Button
           onClick={() => printWithPageSize("80mm 297mm")}
           variant="outline"
-          icon={<PrinterIcon className="mr-2 h-4 w-4" />}
-          text="Imprimir 80mm"
-        />
-
-        <Button
-          onClick={() => printWithPageSize("55mm 297mm")}
-          variant="outline"
-          icon={<PrinterIcon className="mr-2 h-4 w-4" />}
-          text="Imprimir 55mm"
-        />
-
-        <Button
-          onClick={() => printWithPageSize("5.5in 8.5in")}
-          variant="outline"
-          icon={<PrinterIcon className="mr-2 h-4 w-4" />}
-          text="Imprimir Media Carta"
-        />
+          className="text-xs"
+        >
+          <PrinterIcon className="mr-1 h-3 w-3" />
+          Imprimir 80mm
+        </Button>
       </div>
 
-      <Card ref={componentRef} className="bg-white text-gray-800 dark:bg-gray-800 dark:text-gray-200 shadow-lg">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <div className="flex items-center space-x-2">
-            <img src={logoUrl} alt={companyName} className="h-10 w-auto" />
+      <Card ref={componentRef} className="bg-white dark:bg-gray-900 text-black shadow-none border-none">
+        <CardContent className="p-0 receipt-content">
+          <div className="text-center mb-2">
+            <img src={logoUrl} alt={companyName} className="h-16 w-auto mx-auto mb-1" />
+            <h1 className="text-sm font-bold">{companyName}</h1>
+            <p className="text-xs">{companyContact}</p>
+            <p className="text-xs"><strong>Nit:</strong> 1017175353-9</p>
+            <p className="text-xs">Régimen Simplificado</p>
+            <p className="text-xs"><strong>Itagui-Arrayanes:</strong> 3004001077</p>
+            <p className="text-xs"><strong>Barichara:</strong> 3504089988</p>
+          </div>
+
+          <Separator className="my-2" />
+
+          <div className="text-center mb-2">
+            <h2 className="text-sm font-bold">Orden de Servicio Técnico</h2>
+            <p className="text-xs font-medium">No. {techService.id}</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-1 text-xs mb-2">
             <div>
-              <CardTitle className="text-xl font-bold">{companyName}</CardTitle>
-              <p className="text-sm text-muted-foreground">{companyContact}</p>
-            </div>
-          </div>
-          <div className="text-right">
-            <CardTitle className="text-xl">Orden de Servicio Técnico</CardTitle>
-            <p className="text-sm font-medium">No. {techService.id}</p>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <p className="text-sm font-medium">Fecha de Ingreso</p>
-              <p className="text-sm">
-                {new Date()
-                  .toLocaleString("es-CO", { timeZone: "America/Bogota" })
-                  .toString()}
-              </p>
+              <p className="font-medium">Fecha de Ingreso:</p>
+              <p>{new Date().toLocaleString("es-CO", { timeZone: "America/Bogota" }).split(',')[0]}</p>
             </div>
             <div>
-              <p className="text-sm font-medium">Fecha Estimada Entrega</p>
-              <p className="text-sm">
-                {new Date(techService.deliveryDate).toLocaleDateString(
-                  "es-CO",
-                  {
-                    day: "2-digit",
-                    month: "2-digit",
-                    year: "numeric",
-                  }
-                )}
-              </p>
+              <p className="font-medium">Fecha Estimada Entrega:</p>
+              <p>{new Date(techService.deliveryDate).toLocaleDateString("es-CO")}</p>
             </div>
           </div>
 
-          <Separator className="my-4" />
+          <Separator className="my-2" />
 
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Información del Cliente</h3>
-            <p className="text-sm">
-              <span className="font-medium">Nombre:</span>{" "}
-              {techService.client.name}
-            </p>
-            <p className="text-sm">
-              <span className="font-medium">Documento:</span>{" "}
-              {techService.client.documentType} {techService.client.document}
-            </p>
-            <p className="text-sm">
-              <span className="font-medium">Teléfono:</span>{" "}
-              {techService.client.phone}
-            </p>
-            <p className="text-sm">
-              <span className="font-medium">Dirección:</span>{" "}
-              {techService.client.address}
-            </p>
+          <div className="space-y-1 text-xs mb-2">
+            <h3 className="font-bold">Información del Cliente</h3>
+            <p><span className="font-medium">Nombre:</span> {techService.client.name}</p>
+            <p><span className="font-medium">Documento:</span> {techService.client.documentType} {techService.client.document}</p>
+            <p><span className="font-medium">Teléfono:</span> {techService.client.phone}</p>
+            <p><span className="font-medium">Dirección:</span> {techService.client.address}</p>
           </div>
 
-          <Separator className="my-4" />
+          <Separator className="my-2" />
 
-          <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Detalles del Servicio</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <p className="text-sm">
-                <span className="font-medium">Dispositivo:</span>{" "}
-                {techService.deviceType}
-              </p>
-              <p className="text-sm">
-                <span className="font-medium">Marca:</span> {techService.brand}
-              </p>
-              <p className="text-sm">
-                <span className="font-medium">Modelo:</span> {techService.color}
-              </p>
-              <p className="text-sm">
-                <span className="font-medium">IMEI/Serie:</span>{" "}
-                {techService.serialNumber}
-              </p>
-            </div>
-            <p className="text-sm">
-              <span className="font-medium">Bodega:</span>{" "}
-              {techService.warehouseId === 1
-                ? "Barichara"
-                : techService.warehouseId === 2
-                ? "Arrayanes"
-                : `Desconocida (ID: ${techService.warehouseId})`}
-            </p>
-            <p className="text-sm">
-              <span className="font-medium">Observaciones:</span>{" "}
-              {techService.observations}
-            </p>
+          <div className="space-y-1 text-xs mb-2">
+            <h3 className="font-bold">Detalles del Servicio</h3>
+            <p><span className="font-medium">Dispositivo:</span> {techService.deviceType}</p>
+            <p><span className="font-medium">Marca:</span> {techService.brand}</p>
+            <p><span className="font-medium">Modelo:</span> {techService.color}</p>
+            <p><span className="font-medium">IMEI/Serie:</span> {techService.serialNumber}</p>
+            <p><span className="font-medium">Bodega:</span> {techService.warehouseId === 1 ? "Barichara" : techService.warehouseId === 2 ? "Arrayanes" : `Desconocida (ID: ${techService.warehouseId})`}</p>
+            <p><span className="font-medium">Observaciones:</span> {techService.observations}</p>
           </div>
 
-          <Separator className="my-4" />
+          <Separator className="my-2" />
 
-          <div className="mt-8 text-center">
-            <p className="text-sm mb-4">____________________________</p>
-            <p className="text-sm font-medium">Firma del Cliente</p>
+          <div className="mt-4 text-center">
+            <p className="text-xs mb-1">____________________________</p>
+            <p className="text-xs font-medium">Firma del Cliente</p>
           </div>
         </CardContent>
       </Card>
@@ -201,3 +156,4 @@ const ElegantTechServiceReceipt: React.FC<ReceiptProps> = ({
 };
 
 export default ElegantTechServiceReceipt;
+

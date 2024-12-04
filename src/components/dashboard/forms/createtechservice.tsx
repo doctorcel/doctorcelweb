@@ -212,7 +212,7 @@ const TechServiceForm = () => {
           <CreateClient />
         </div>
       </div>
-      <div className="max-w-4xl mx-auto p-6 bg-gray-100 rounded-lg shadow-lg mt-8 mb-8 dark:bg-gray-900 dark:text-gray-200">
+      <div className="max-w-4xl mx-auto p-6 bg-gray-300 dark:bg-gray-900 rounded-lg shadow-lg mt-8 mb-8 dark:text-gray-200">
         {errorMessage && (
           <div className="mb-6 p-4 bg-red-100 text-red-700 border-l-4 border-red-500 rounded">
             {errorMessage}
@@ -418,7 +418,7 @@ const TechServiceForm = () => {
           <div className="mt-8">
             <button
               type="submit"
-              className="w-full py-3 px-4 bg-gray-900 text-white font-semibold rounded-md dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700 hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 transition-colors duration-300"
+              className="w-full py-3 px-4 bg-blue-900 dark:bg-green-900 text-gray-100 dark:hover:bg-green-700 dark:text-white dark:border-gray-700 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 transition-colors duration-300"
             >
               Crear Orden
             </button>
