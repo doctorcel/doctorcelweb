@@ -312,7 +312,7 @@ export default function CreateProduct() {
           setCurrentArticle(null);
           setIsArticleModalOpen(true);
         }}
-        className="bg-blue-900 dark:bg-green-900 text-gray-100 dark:hover:bg-green-700 dark:text-white font-bold py-2 px-4 inline-flex items-center"
+        className="bg-blue-900 dark:bg-green-900 text-xs lg:text-sm text-gray-100 dark:hover:bg-green-700 dark:text-white py-2 px-4 inline-flex items-center"
       />
 
       {/* Modal for creating/editing article */}

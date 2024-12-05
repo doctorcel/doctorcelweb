@@ -1,5 +1,6 @@
 import ClientManagement from '@/components/clientManagement'
 import CreateClient from '@/components/ui/createClient';
+import CreateProduct from '@/components/ui/createProduct';
 import React from 'react'
 
 export default function InvoicePage() {
@@ -10,12 +11,16 @@ export default function InvoicePage() {
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
           Facturación
         </h1>
-        <p className="text-lg text-gray-600 dark:text-gray-400">
+        <p className="text-sm text-gray-600 dark:text-gray-400">
           En esta sección, puedes crear la factuación de ventas, verifica que
           ingreses toda la información correctamente.
         </p>
       </div>
-      <CreateClient />
+      <div className='flex gap-3 flex-wrap'>
+        <CreateClient />
+        <CreateProduct />
+      </div>
+
     </div>
     <ClientManagement />
     </>

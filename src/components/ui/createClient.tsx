@@ -28,7 +28,7 @@ export default function CreateClient() {
           text="Crear Cliente"
           icon={<Plus className="h-4 w-4" />}
           onClick={handleOpenModal}
-          className="bg-blue-900 dark:bg-green-900 text-gray-100 dark:hover:bg-green-700 dark:text-white py-2 px-4 inline-flex items-center" /><Modal isOpen={isModalOpen} onClose={handleCloseModal}>
+          className="bg-blue-900 dark:bg-green-900 text-xs lg:text-sm text-gray-100 dark:hover:bg-green-700 dark:text-white py-2 px-4 inline-flex items-center" /><Modal isOpen={isModalOpen} onClose={handleCloseModal}>
               <h2 className="text-xl font-semibold mb-4">
                   Formulario de Nuevo Cliente
               </h2>

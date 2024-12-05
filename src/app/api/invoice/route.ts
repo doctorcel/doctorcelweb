@@ -23,7 +23,8 @@ const InvoiceSchema = z.object({
   clientEmail: z.string().email().optional(),
   clientTaxId: z.string().optional(),
   total: z.number().positive(),
-  items: z.array(InvoiceItemSchema).min(1)
+  items: z.array(InvoiceItemSchema).min(1),
+  notes: z.string().optional()
 });
 
 export async function POST(req: NextRequest) {

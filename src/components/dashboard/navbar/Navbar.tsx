@@ -61,10 +61,10 @@ export default function NavBarDashboard() {
           <NavLink href="/dashboard/productsmanagement" icon={<Package size={18} />} isActive={pathname === '/dashboard/productsmanagement'}>
             Productos
           </NavLink>
-          <NavLink href="/dashboard/invoice" icon={<CreditCard size={18} />} isActive={pathname === '/dashboard/billing'}>
+          <NavLink href="/dashboard/invoice" icon={<CreditCard size={18} />} isActive={pathname === '/dashboard/invoice'}>
             Facturación
           </NavLink>
-          <NavLink href="/dashboard/techservice" icon={<HeadphonesIcon size={18} />} isActive={pathname === '/dashboard/techsupport'}>
+          <NavLink href="/dashboard/techservice" icon={<HeadphonesIcon size={18} />} isActive={pathname === '/dashboard/techservice'}>
             Servicio Técnico
           </NavLink>
           <NavLink href="/dashboard/users" icon={<UserRoundCog size={18} />} isActive={pathname === '/dashboard/users'}>
