@@ -16,7 +16,8 @@ export default function InvoicePage() {
         </p>
       </div>
       <CreateClient />
-    </div><ClientManagement />
+    </div>
+    <ClientManagement />
     </>
   )
 }
