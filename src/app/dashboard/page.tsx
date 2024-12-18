@@ -1,17 +1,37 @@
-import React from 'react';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
-import styles from '@/styles/dashboard/Dashboard.module.scss';
+// src/app/dashboard/page.tsx
 
+'use client';
 
-export default function Dashboard() {
+import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+
+const DashboardPage: React.FC = () => {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === 'loading') return; // No hacer nada mientras se carga
+    if (!session) router.push('/login'); // Redirigir si no está autenticado
+  }, [session, status, router]);
+
+  if (status === 'loading') {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <ProtectedRoute>
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl mb-8 text-green-600 dark:text-green-400">Panel de Administración</h1>
-        <div className={styles.modules}>
-          <h4>Bienvenido al panel de administración en la barra de navegación izquierda puedes seleccionar la opción que necesitas.</h4>
-        </div>
-      </div>
-    </ProtectedRoute>
+    <div className="p-6">
+      <h1 className="text-3xl mb-4">Dashboard</h1>
+      <p>Welcome, {session?.user?.name}</p>
+      <p>Your role: {session?.user?.role}</p>
+      <button
+        onClick={() => signOut()}
+        className="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+      >
+        Sign Out
+      </button>
+    </div>
   );
-}
+};
+
+export default DashboardPage;

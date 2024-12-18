@@ -1,105 +1,53 @@
-import { PrismaClient, Client } from '@prisma/client';
-import { NextRequest, NextResponse } from 'next/server';
+// app/api/clients/route.ts
+import { NextResponse } from 'next/server';
+import prisma from '../../../prisma/client';
+import { z } from 'zod';
 
-const prisma = new PrismaClient();
+const clientSchema = z.object({
+  name: z.string().min(1, 'Nombre es requerido'),
+  email: z.string().email().min(1,'Email es requerido'),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  documentType: z.string().optional(),
+  personType: z.string().optional(),
+  regime: z.string().optional(),
+  country: z.string().optional(),
+  department: z.string().optional(),
+  city: z.string().optional(),
+  document: z.string().min(1, 'Numero de documento es requerido'),
+});
 
-// POST: Crear un cliente
-export async function POST(req: NextRequest): Promise<NextResponse> {
+export async function POST(request: Request) {
   try {
-    const data: Client = await req.json();  // Obtener los datos del cuerpo de la solicitud
+    const data = await request.json();
+    const parsedData = clientSchema.parse(data);
 
-    // Crear un cliente en la base de datos
     const newClient = await prisma.client.create({
-      data: {
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        address: data.address,
-        taxId: data.taxId,
-        documentType: data.documentType,
-        document: data.document,
-        personType: data.personType,
-        regime: data.regime,
-        country: data.country,
-        department: data.department,
-        city: data.city,
-      },
+      data: parsedData,
     });
 
-    return new NextResponse(JSON.stringify(newClient), {
-      status: 201,
-    });
-  } catch (error: unknown) {
-    // Validación del tipo de error
-    if (error instanceof Error) {
-      return new NextResponse(JSON.stringify({ error: error.message }), {
-        status: 500,
-      });
-    } else {
-      return new NextResponse(JSON.stringify({ error: 'Error desconocido' }), {
-        status: 500,
-      });
+    return NextResponse.json(newClient, { status: 201 });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: error.errors }, { status: 400 });
     }
+    console.error('Error creating client:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
-// GET: Obtener todos los clientes
-export async function GET(): Promise<NextResponse> {
+export async function GET() {
   try {
-    const clients = await prisma.client.findMany();
-
-    return new NextResponse(JSON.stringify(clients), {
-      status: 200,
-    });
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      return new NextResponse(JSON.stringify({ error: error.message }), {
-        status: 500,
-      });
-    } else {
-      return new NextResponse(JSON.stringify({ error: 'Error desconocido' }), {
-        status: 500,
-      });
-    }
-  }
-}
-
-// PUT: Actualizar un cliente
-export async function PUT(req: NextRequest): Promise<NextResponse> {
-  try {
-    const { id, name, email, phone, address, taxId, documentType, document, personType, regime, country, department, city } = await req.json();
-
-    // Actualizar un cliente por ID
-    const updatedClient = await prisma.client.update({
-      where: { id },
-      data: {
-        name,
-        email,
-        phone,
-        address,
-        taxId,
-        documentType,
-        document,
-        personType,
-        regime,
-        country,
-        department,
-        city,
+    const clients = await prisma.client.findMany({
+      include: {
+        invoices: true,
+        orders: true,
+        techServices: true,
       },
     });
-
-    return new NextResponse(JSON.stringify(updatedClient), {
-      status: 200,
-    });
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      return new NextResponse(JSON.stringify({ error: error.message }), {
-        status: 500,
-      });
-    } else {
-      return new NextResponse(JSON.stringify({ error: 'Error desconocido' }), {
-        status: 500,
-      });
-    }
+    return NextResponse.json(clients, { status: 200 });
+  } catch (error) {
+    console.error('Error fetching clients:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

@@ -1,33 +1,32 @@
+// src/app/login/page.tsx
+
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useAuthContext } from '@/contexts/AuthContext';
+import { Button } from '../ui/Button';
 import { User, Lock } from 'lucide-react';
-import { Button } from "@/components/ui/Button";
 
-export const Login: React.FC = () => {
+export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const router = useRouter();
-  const { login } = useAuthContext();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
 
-    try {
-      await login(email, password);
-      console.log('Login successful, redirecting to dashboard...');
+    const res = await signIn('credentials', {
+      redirect: false,
+      email,
+      password,
+    });
+
+    if (res?.error) {
+      setError(res.error);
+    } else {
       router.push('/dashboard');
-    } catch (err) {
-      console.error('Login error:', err);
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('Error en el inicio de sesión');
-      }
     }
   };
 
@@ -91,5 +90,3 @@ export const Login: React.FC = () => {
     </div>
   );
 };
-
-export default Login;

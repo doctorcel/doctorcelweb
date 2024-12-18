@@ -1,12 +1,20 @@
-'use client'
+// src/app/providers.tsx
 
-import { ThemeProvider } from 'next-themes'
-import { ReactNode } from 'react'
+'use client';
 
-export function Providers({ children }: { children: ReactNode }) {
-  return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      {children}
-    </ThemeProvider>
-  )
+import { SessionProvider } from 'next-auth/react';
+import React from 'react';
+
+interface ProvidersProps {
+  children: React.ReactNode;
 }
+
+const Providers: React.FC<ProvidersProps> = ({ children }) => {
+  return (
+    <SessionProvider>
+      {children}
+    </SessionProvider>
+  );
+};
+
+export default Providers;

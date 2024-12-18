@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname, useRouter } from 'next/navigation'
-import { LogOut, Package, CreditCard, HeadphonesIcon, UserRoundCog, Menu } from 'lucide-react'
+import { LogOut, Package, CreditCard, HeadphonesIcon, UserRoundCog, Menu, UsersRound, FileSliders } from 'lucide-react'
 
 export default function NavBarDashboard() {
   const pathname = usePathname()
@@ -60,6 +60,12 @@ export default function NavBarDashboard() {
         <div className="flex-grow space-y-1 px-3 ">
           <NavLink href="/dashboard/productsmanagement" icon={<Package size={18} />} isActive={pathname === '/dashboard/productsmanagement'}>
             Productos
+          </NavLink>          
+          <NavLink href="/dashboard/clients" icon={<UsersRound size={18} />} isActive={pathname === '/dashboard/clients'}>
+            Clientes
+          </NavLink>
+          <NavLink href="/dashboard/admin" icon={<FileSliders size={18} />} isActive={pathname === '/dashboard/admin'}>
+            Administracion
           </NavLink>
           <NavLink href="/dashboard/invoice" icon={<CreditCard size={18} />} isActive={pathname === '/dashboard/invoice'}>
             Facturación
@@ -67,6 +73,7 @@ export default function NavBarDashboard() {
           <NavLink href="/dashboard/techservice" icon={<HeadphonesIcon size={18} />} isActive={pathname === '/dashboard/techservice'}>
             Servicio Técnico
           </NavLink>
+
           <NavLink href="/dashboard/users" icon={<UserRoundCog size={18} />} isActive={pathname === '/dashboard/users'}>
             Usuarios
           </NavLink>

@@ -1,11 +1,11 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { Onest } from "next/font/google";
-import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from 'next-themes';
 import '../app/globals.css'
 import FloatingThemeToggle from '@/components/ui/DarkModeButton';
 import 'sweetalert2/dist/sweetalert2.min.css';
+import Providers from './providers';
 
 const onest = Onest({ weight: "400", subsets: ["latin"] })
 
@@ -23,10 +23,10 @@ export default function RootLayout({
     <html lang="es" suppressHydrationWarning>
       <body className={onest.className}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <AuthProvider>
+          <Providers>
             {children}
             <FloatingThemeToggle />
-          </AuthProvider>
+          </Providers>
         </ThemeProvider>
       </body>
     </html>

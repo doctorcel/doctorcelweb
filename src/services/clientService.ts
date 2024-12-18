@@ -1,62 +1,27 @@
-import { Client } from '@/models/client';
+// src/services/clientService.ts
 
-const API_URL = '/api/client';
+import axiosInstance from './axiosInstance';
+import { Client, CreateClientInput, UpdateClientInput } from '../models/client';
 
-// Crear cliente
-export const createClient = async (clientData: Client): Promise<Client> => {
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(clientData),
-  });
-
-  if (!response.ok) {
-    throw new Error('Error al crear el cliente');
-  }
-
-  return response.json();
-};
-
-// Obtener todos los clientes
 export const getClients = async (): Promise<Client[]> => {
-  const response = await fetch(API_URL);
-
-  if (!response.ok) {
-    throw new Error('Error al obtener los clientes');
-  }
-
-  return response.json();
+  const response = await axiosInstance.get<Client[]>('/');
+  return response.data;
 };
 
-// Actualizar cliente
-export const updateClient = async (clientId: number, updatedData: Partial<Client>): Promise<Client> => {
-  const response = await fetch(API_URL, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      id: clientId,
-      ...updatedData,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error('Error al actualizar el cliente');
-  }
-
-  return response.json();
+export const getClientById = async (id: number): Promise<Client> => {
+  const response = await axiosInstance.get<Client>(`/${id}`);
+  return response.data;
 };
 
-// Obtener cliente por ID
-export const getClientById = async (clientId: number): Promise<Client> => {
-  const response = await fetch(`${API_URL}/${clientId}`);
+export const createClient = async (input: CreateClientInput): Promise<Client> => {
+  const response = await axiosInstance.post<Client>('/', input);
+  return response.data;
+};
 
-  if (!response.ok) {
-    throw new Error('Error al obtener el cliente');
-  }
-
-  return response.json();
+export const updateClient = async (
+  id: number,
+  input: UpdateClientInput
+): Promise<Client> => {
+  const response = await axiosInstance.patch<Client>(`/${id}`, input);
+  return response.data;
 };

@@ -1,11 +1,59 @@
+// prisma/schema.prisma
+
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  name         String
+  email        String        @unique
+  password     String
+  role         Role
+  techServices TechService[]
+
+  // Relaciones con modelos de NextAuth
+  accounts     Account[]
+  sessions     Session[]
+}
+
+model Account {
+  id                 Int       @id @default(autoincrement())
+  userId             Int
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           Int      @id @default(autoincrement())
+  sessionToken String   @unique
+  userId       Int
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
 
 model Warehouse {
@@ -55,20 +103,18 @@ model Article {
   financialEntity String?
   offerPrice      Float?
   cost            Float         @default(0)
-  serialNumber    Int           @default(0)    // Nuevo campo con valor predeterminado 0
-  visible         Visibility    @default(DISABLED) // Nuevo campo con enum y valor predeterminado DISABLED
-  active          ActiveStatus  @default(ENABLED)  // Nuevo campo con enum y valor predeterminado ENABLED
+  serialNumber    Int           @default(0)
+  visible         Visibility    @default(DISABLED)
+  active          ActiveStatus  @default(ENABLED)
   category        Category      @relation(fields: [categoryId], references: [id])
   warehouse       Warehouse     @relation(fields: [warehouseId], references: [id])
   InvoiceItem     InvoiceItem[]
 }
 
-
-
 model Category {
   id            Int            @id @default(autoincrement())
   name          String
-  active          ActiveStatus  @default(ENABLED)  // Nuevo campo con enum y valor predeterminado ENABLED
+  active        ActiveStatus   @default(ENABLED)
   articles      Article[]
   subcategories Subcategory[]
 }
@@ -82,7 +128,7 @@ model Subcategory {
 
 model Order {
   id        Int      @id @default(autoincrement())
-  number    Int      @unique @default(autoincrement()) // Modificado
+  number    Int      @unique @default(autoincrement())
   createdAt DateTime @default(now())
   total     Float
   status    String
@@ -99,12 +145,12 @@ model TechService {
   clientId     Int
   technicianId Int?
   warehouseId  Int
-  deliveryDate DateTime? // Nuevo campo
-  brand        String?   // Nuevo campo
-  color        String?   // Nuevo campo
-  observations String?   // Nuevo campo
-  password     String?   // Nuevo campo
-  active          ActiveStatus  @default(ENABLED)  // Nuevo campo con enum y valor predeterminado ENABLED
+  deliveryDate DateTime?
+  brand        String?
+  color        String?
+  observations String?
+  password     String?
+  active       ActiveStatus  @default(ENABLED)
   client       Client    @relation(fields: [clientId], references: [id])
   technician   User?      @relation(fields: [technicianId], references: [id])
   warehouse    Warehouse @relation(fields: [warehouseId], references: [id])
@@ -117,9 +163,10 @@ enum Status {
   GARANTIA
   DEVOLUCION
 }
+
 model Invoice {
   id            Int           @id @default(autoincrement())
-  number        Int           @unique @default(autoincrement()) // Modificado
+  number        Int           @unique @default(autoincrement())
   date          DateTime      @default(now())
   total         Float
   clientId      Int
@@ -131,10 +178,10 @@ model Invoice {
   clientTaxId   String?
   warehouseId   Int
   client        Client        @relation(fields: [clientId], references: [id])
-  companyInfo   CompanyInfo?   @relation(fields: [companyInfoId], references: [id])
+  companyInfo   CompanyInfo?  @relation(fields: [companyInfoId], references: [id])
   warehouse     Warehouse     @relation(fields: [warehouseId], references: [id])
-  active        ActiveStatus  @default(ENABLED)  // Nuevo campo con enum y valor predeterminado ENABLED
-  notes         String?        @default("sin nota")
+  active        ActiveStatus  @default(ENABLED)
+  notes         String?       @default("sin nota")
   items         InvoiceItem[]
 }
 
@@ -147,37 +194,35 @@ model InvoiceItem {
   price     Float
   cost      Float   @default(0)
   subtotal  Float
-  discount  Float?  // Nuevo campo
+  discount  Float?
   article   Article @relation(fields: [articleId], references: [id])
   invoice   Invoice @relation(fields: [invoiceId], references: [id])
 }
 
 model Client {
   id           Int           @id @default(autoincrement())
-  name         String
+  name         String        @unique
   email        String?
-  phone        String?
+  phone        String?       @unique
   address      String?
   taxId        String?
-  documentType String?       // Nuevo campo
-  document     String?       // Nuevo campo
-  personType   String?       // Nuevo campo
-  regime       String?       // Nuevo campo
-  country      String?       // Nuevo campo
-  department   String?       // Nuevo campo
-  city         String?       // Nuevo campo
+  documentType String?
+  document     String?       @unique
+  personType   String?
+  regime       String?
+  country      String?
+  department   String?
+  city         String?
+  active       ActiveStatus  @default(ENABLED)
   invoices     Invoice[]
   orders       Order[]
   techServices TechService[]
 }
 
-model User {
-  id           Int           @id @default(autoincrement())
-  name         String
-  email        String        @unique
-  password     String
-  role         Role
-  techServices TechService[]
+enum Role {
+  ADMIN
+  SELLER
+  TECHNICIAN
 }
 
 model CompanyInfo {
@@ -187,19 +232,13 @@ model CompanyInfo {
   phone           String
   email           String
   taxId           String
-  logoUrl         String?   // Nuevo campo
-  documentType    String?   // Nuevo campo
-  documentNumber  String?   // Nuevo campo
-  regime          String?   // Nuevo campo
-  city            String?   // Nuevo campo
-  department      String?   // Nuevo campo
-  country         String?   // Nuevo campo
-  website         String?   // Nuevo campo
+  logoUrl         String?
+  documentType    String?
+  documentNumber  String?
+  regime          String?
+  city            String?
+  department      String?
+  country         String?
+  website         String?
   invoices        Invoice[]
-}
-
-enum Role {
-  ADMIN
-  SELLER
-  TECHNICIAN
 }
