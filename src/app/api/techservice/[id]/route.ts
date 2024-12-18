@@ -1,4 +1,4 @@
-import { prisma } from '@/lib/prisma';  // Asegúrate de tener el prisma client configurado
+import prisma from '@/lib/prisma';  // Asegúrate de tener el prisma client configurado
 import { NextResponse } from 'next/server';
 
 // Obtener un TechService por su ID

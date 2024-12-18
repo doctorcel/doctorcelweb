@@ -1,6 +1,6 @@
-import { PrismaClient, Status } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
-import { CreateTechServiceDTO, UpdateTechServiceDTO, TechServiceResponse } from '@/models/techservice';
+import { CreateTechServiceDTO } from '@/models/techservice';
 
 const prisma = new PrismaClient();
 
