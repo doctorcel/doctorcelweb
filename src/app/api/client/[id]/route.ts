@@ -46,7 +46,6 @@ export async function PATCH(request: Request, { params }: { params: Params }) {
         email: data.email,
         phone: data.phone,
         address: data.address,
-        taxId: data.taxId,
         documentType: data.documentType,
         document: data.document,
         personType: data.personType,
