@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import {prisma} from '@/lib/prisma'; // Adjust import path as needed
+import prisma from '@/lib/prisma'; // Adjust import path as needed
 
 // Validation Schema
 const InvoiceItemSchema = z.object({
