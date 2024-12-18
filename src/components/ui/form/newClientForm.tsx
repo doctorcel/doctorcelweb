@@ -1,4 +1,5 @@
 // src/components/ui/form/ClientForm.tsx
+
 import React, { useState } from "react";
 import { Client } from "@/models/client";
 import { createClient } from "@/services/clientService";
@@ -72,9 +73,10 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClose, onClientAdded }) => {
     if (!validateForm()) return;
 
     setLoading(true);
+    setErrors({});
 
     try {
-      const newClient = await createClient(formData as Client); // Aseguramos que formData cumple con la interfaz Client
+      const newClient = await createClient(formData as any); // Utiliza 'any' o ajusta las interfaces si es necesario
       Swal.fire({
         title: "Cliente creado",
         text: `El cliente ${newClient.name} fue creado exitosamente.`,
@@ -84,10 +86,27 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClose, onClientAdded }) => {
 
       onClientAdded(newClient);
       onClose(); // Cierra el modal después de agregar el cliente
-    } catch (error) {
+
+      // Reiniciar el formulario
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        address: "",
+        documentType: "",
+        document: "",
+        personType: "",
+        regime: "",
+        country: "",
+        department: "",
+        city: "",
+      });
+    } catch (error: any) {
+      const errorMessage = error.message || "Hubo un problema al crear el cliente. Inténtelo nuevamente.";
+      setErrors({ document: errorMessage }); // Puedes mapear el error a un campo específico si lo deseas
       Swal.fire({
         title: "Error",
-        text: "Hubo un problema al crear el cliente. Inténtelo nuevamente.",
+        text: errorMessage,
         icon: "error",
         confirmButtonText: "Cerrar",
       });
@@ -393,26 +412,6 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClose, onClientAdded }) => {
               {errors.city}
             </span>
           )}
-        </div>
-
-        {/* Tax ID (Opcional) */}
-        <div>
-          <label htmlFor="taxId" className="block font-medium text-gray-700">
-            ID Fiscal (Opcional)
-          </label>
-          <input
-            type="text"
-            id="taxId"
-            name="taxId"
-            value={formData.taxId}
-            onChange={handleChange}
-            className="mt-2 p-2 border border-gray-300 w-full rounded-md"
-            placeholder="Ingrese el ID Fiscal"
-          />
-          {/* Si taxId es obligatorio, descomenta las siguientes líneas:
-          {errors.taxId && (
-            <span className="text-red-500 text-sm">{errors.taxId}</span>
-          )} */}
         </div>
       </div>
 

@@ -214,7 +214,6 @@ model Client {
   email        String?
   phone        String?       @unique
   address      String?
-  taxId        String?
   documentType String?
   document     String?       @unique
   personType   String?

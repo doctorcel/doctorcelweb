@@ -92,10 +92,6 @@ const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClientCreated }) 
       setError('El campo Ciudad es obligatorio.');
       return false;
     }
-    if (!taxId.trim()) {
-      setError('El campo ID Fiscal es obligatorio.');
-      return false;
-    }
     // Validación adicional para email si es necesario
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -286,17 +282,6 @@ const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClientCreated }) 
             type="text"
             name="city"
             value={formData.city}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
-          />
-        </div>
-        <div>
-          <label className="block text-gray-700">ID Fiscal *</label> {/* Campo taxId */}
-          <input
-            type="text"
-            name="taxId"
-            value={formData.taxId}
             onChange={handleChange}
             required
             className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"

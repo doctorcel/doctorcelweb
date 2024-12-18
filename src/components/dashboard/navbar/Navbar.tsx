@@ -5,11 +5,14 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname, useRouter } from 'next/navigation'
 import { LogOut, Package, CreditCard, HeadphonesIcon, UserRoundCog, Menu, UsersRound, FileSliders } from 'lucide-react'
+import { signOut, useSession } from 'next-auth/react' // Importar useSession
 
 export default function NavBarDashboard() {
   const pathname = usePathname()
   const router = useRouter()
   const [isOpen, setIsOpen] = useState(false)
+  
+  const { data: session, status } = useSession() // Obtener la sesión
 
   useEffect(() => {
     const handleResize = () => {
@@ -26,13 +29,10 @@ export default function NavBarDashboard() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  const handleLogout = () => {
-    localStorage.removeItem('user')
-    localStorage.removeItem('token')
-    router.push('/')
-  }
-
   const toggleSidebar = () => setIsOpen(!isOpen)
+
+  // Verificar si el usuario es admin
+  const isAdmin = session?.user?.role === 'ADMIN'
 
   return (
     <>
@@ -58,29 +58,33 @@ export default function NavBarDashboard() {
           />
         </div>
         <div className="flex-grow space-y-1 px-3 ">
-          <NavLink href="/dashboard/productsmanagement" icon={<Package size={18} />} isActive={pathname === '/dashboard/productsmanagement'}>
-            Productos
-          </NavLink>          
-          <NavLink href="/dashboard/clients" icon={<UsersRound size={18} />} isActive={pathname === '/dashboard/clients'}>
-            Clientes
-          </NavLink>
-          <NavLink href="/dashboard/admin" icon={<FileSliders size={18} />} isActive={pathname === '/dashboard/admin'}>
-            Administracion
-          </NavLink>
+          {isAdmin && ( // Solo mostrar estos enlaces si el usuario es admin
+            <>
+              <NavLink href="/dashboard/productsmanagement" icon={<Package size={18} />} isActive={pathname === '/dashboard/productsmanagement'}>
+                Productos
+              </NavLink>
+              <NavLink href="/dashboard/clients" icon={<UsersRound size={18} />} isActive={pathname === '/dashboard/clients'}>
+                Clientes
+              </NavLink>
+              <NavLink href="/dashboard/admin" icon={<FileSliders size={18} />} isActive={pathname === '/dashboard/admin'}>
+                Administración
+              </NavLink>
+              <NavLink href="/dashboard/users" icon={<UserRoundCog size={18} />} isActive={pathname === '/dashboard/users'}>
+                Usuarios
+              </NavLink>
+            </>
+          )}
+          {/* Estos enlaces están disponibles para todos los roles */}
           <NavLink href="/dashboard/invoice" icon={<CreditCard size={18} />} isActive={pathname === '/dashboard/invoice'}>
             Facturación
           </NavLink>
           <NavLink href="/dashboard/techservice" icon={<HeadphonesIcon size={18} />} isActive={pathname === '/dashboard/techservice'}>
             Servicio Técnico
           </NavLink>
-
-          <NavLink href="/dashboard/users" icon={<UserRoundCog size={18} />} isActive={pathname === '/dashboard/users'}>
-            Usuarios
-          </NavLink>
         </div>
         <div className="p-4 mt-auto">
           <button 
-            onClick={handleLogout}
+            onClick={() => signOut({ callbackUrl: '/' })}
             className="w-full flex items-center justify-center space-x-2 px-4 py-2 text-sm 
                        bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 
                        hover:bg-gray-300 dark:hover:bg-gray-700 
@@ -110,4 +114,3 @@ function NavLink({ href, children, icon, isActive }: { href: string, children: R
     </Link>
   )
 }
-
