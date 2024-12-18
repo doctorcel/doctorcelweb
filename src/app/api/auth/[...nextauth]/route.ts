@@ -7,7 +7,7 @@ import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { Role } from '@prisma/client';
 
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -37,7 +37,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Invalid password');
         }
 
-        // Retornar los datos del usuario
+        // Retornar los datos del usuario con id como cadena
         return { id: user.id, name: user.name, email: user.email, role: user.role };
       }
     })
@@ -57,7 +57,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       // Agregar el rol y id al objeto de sesión
       if (token && session.user) {
-        session.user.id = token.id as number;
+        session.user.id = token.id as string;
         session.user.role = token.role as Role;
       }
       return session;

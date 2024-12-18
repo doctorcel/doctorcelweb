@@ -10,7 +10,7 @@ datasource db {
 }
 
 model User {
-  id           Int           @id @default(autoincrement())
+  id           String        @id @default(uuid())
   name         String
   email        String        @unique
   password     String
@@ -18,24 +18,30 @@ model User {
   techServices TechService[]
 
   // Relaciones con modelos de NextAuth
-  accounts     Account[]
-  sessions     Session[]
+  accounts Account[]
+  sessions Session[]
+
+  // Relación con CashRegister
+  cashRegisters CashRegister[]
+
+  // Relación inversa para servicios técnicos asignados como técnico
+  assignedTechServices TechService[] @relation("AssignedTechServices")
 }
 
 model Account {
-  id                 Int       @id @default(autoincrement())
-  userId             Int
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
-  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                Int     @id @default(autoincrement())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -43,7 +49,7 @@ model Account {
 model Session {
   id           Int      @id @default(autoincrement())
   sessionToken String   @unique
-  userId       Int
+  userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -112,9 +118,9 @@ model Article {
 }
 
 model Category {
-  id            Int            @id @default(autoincrement())
+  id            Int           @id @default(autoincrement())
   name          String
-  active        ActiveStatus   @default(ENABLED)
+  active        ActiveStatus  @default(ENABLED)
   articles      Article[]
   subcategories Subcategory[]
 }
@@ -137,23 +143,26 @@ model Order {
 }
 
 model TechService {
-  id           Int       @id @default(autoincrement())
-  createdAt    String  
+  id           Int          @id @default(autoincrement())
+  createdAt    DateTime     @default(now())
   status       Status
   deviceType   String
   serialNumber String?
   clientId     Int
-  technicianId Int?
+  technicianId String?
   warehouseId  Int
   deliveryDate DateTime?
   brand        String?
   color        String?
   observations String?
   password     String?
-  active       ActiveStatus  @default(ENABLED)
-  client       Client    @relation(fields: [clientId], references: [id])
-  technician   User?      @relation(fields: [technicianId], references: [id])
-  warehouse    Warehouse @relation(fields: [warehouseId], references: [id])
+  active       ActiveStatus @default(ENABLED)
+
+  client     Client    @relation(fields: [clientId], references: [id])
+  technician User?     @relation("AssignedTechServices", fields: [technicianId], references: [id])
+  warehouse  Warehouse @relation(fields: [warehouseId], references: [id])
+
+  User User[]
 }
 
 enum Status {
@@ -226,19 +235,39 @@ enum Role {
 }
 
 model CompanyInfo {
-  id              Int       @id @default(autoincrement())
-  name            String
-  address         String
-  phone           String
-  email           String
-  taxId           String
-  logoUrl         String?
-  documentType    String?
-  documentNumber  String?
-  regime          String?
-  city            String?
-  department      String?
-  country         String?
-  website         String?
-  invoices        Invoice[]
+  id             Int       @id @default(autoincrement())
+  name           String
+  address        String
+  phone          String
+  email          String
+  taxId          String
+  logoUrl        String?
+  documentType   String?
+  documentNumber String?
+  regime         String?
+  city           String?
+  department     String?
+  country        String?
+  website        String?
+  invoices       Invoice[]
+}
+
+model CashRegister {
+  id            String            @id @default(uuid())
+  date          DateTime          @unique
+  openingAmount Float
+  closingAmount Float
+  userId        String
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dailyReport   DailySalesReport?
+}
+
+model DailySalesReport {
+  id                 String       @id @default(uuid())
+  date               DateTime     @unique
+  totalSales         Float
+  totalCashCollected Float
+  discrepancy        Float
+  cashRegisterId     String       @unique
+  cashRegister       CashRegister @relation(fields: [cashRegisterId], references: [id], onDelete: Cascade)
 }

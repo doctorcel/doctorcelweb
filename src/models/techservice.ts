@@ -5,17 +5,15 @@ export interface CreateTechServiceDTO {
   deviceType: string;
   serialNumber?: string;
   clientId: number;
-  technicianId?: number;
+  technicianId?: string | null; // Cambiado de number a string | null
   warehouseId: number;
-  deliveryDate?: string; // ISO date string
+  deliveryDate?: string;
   brand?: string;
   color?: string;
   observations?: string;
   password?: string;
   createdAt?: string;
-
 }
-
 export interface UpdateTechServiceDTO {
   status?: Status;
   deviceType?: string;

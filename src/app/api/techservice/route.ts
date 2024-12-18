@@ -1,3 +1,5 @@
+// src/app/api/techservice/route.ts
+
 import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
 import { CreateTechServiceDTO } from '@/models/techservice';
@@ -9,6 +11,13 @@ export async function POST(req: Request) {
   try {
     const data: CreateTechServiceDTO = await req.json();
 
+    // Validar campos requeridos
+    if (!data.status || !data.deviceType || !data.clientId || !data.warehouseId) {
+      return NextResponse.json(
+        { message: 'Faltan campos requeridos' },
+        { status: 400 }
+      );
+    }
 
     // Crear el TechService en la base de datos
     const newTechService = await prisma.techService.create({
@@ -17,21 +26,24 @@ export async function POST(req: Request) {
         deviceType: data.deviceType,
         serialNumber: data.serialNumber || null,
         clientId: data.clientId,
-        technicianId: data.technicianId || null,
+        technicianId: data.technicianId || null, // Debe ser string o null
         warehouseId: data.warehouseId,
         deliveryDate: data.deliveryDate ? new Date(data.deliveryDate) : null,
         brand: data.brand || null,
         color: data.color || null,
         observations: data.observations || null,
         password: data.password || null,
-        createdAt: data.createdAt || '',
+        createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
       },
     });
 
     return NextResponse.json(newTechService, { status: 201 });
   } catch (error) {
     console.error('Error creating TechService:', error);
-    return NextResponse.json({ message: 'Error creating TechService' }, { status: 500 });
+    return NextResponse.json(
+      { message: 'Error creando TechService' },
+      { status: 500 }
+    );
   }
 }
 
@@ -109,7 +121,7 @@ export async function GET(req: Request) {
       },
       include: {
         client: true, // Para incluir los datos del cliente
-        technician: true, // Si es necesario, incluir los datos del técnico
+        technician: true, // Incluir los datos del técnico
         warehouse: true, // Incluir los datos del warehouse
       },
     });
@@ -121,17 +133,23 @@ export async function GET(req: Request) {
 
     const totalPages = Math.ceil(totalTechServices / limit);
 
-    return NextResponse.json({
-      data: techServices,
-      pagination: {
-        total: totalTechServices,
-        totalPages,
-        currentPage: page,
-        perPage: limit,
+    return NextResponse.json(
+      {
+        data: techServices,
+        pagination: {
+          total: totalTechServices,
+          totalPages,
+          currentPage: page,
+          perPage: limit,
+        },
       },
-    }, { status: 200 });
+      { status: 200 }
+    );
   } catch (error) {
     console.error('Error fetching TechService(s):', error);
-    return NextResponse.json({ message: 'Error fetching TechService(s)' }, { status: 500 });
+    return NextResponse.json(
+      { message: 'Error obteniendo TechService(s)' },
+      { status: 500 }
+    );
   }
 }

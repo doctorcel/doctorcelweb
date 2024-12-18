@@ -1,20 +1,27 @@
 // src/types/next-auth.d.ts
 
 import NextAuth from "next-auth";
-import { Role } from "@prisma/client"; // Asegúrate de que esta ruta es correcta según tu estructura de carpetas
+import { Role } from "@prisma/client";
 
 declare module "next-auth" {
   interface User {
-    id: number;
+    id: string; // Cambiado a string
     role: Role;
   }
 
   interface Session {
     user: {
-      id: number;
+      id: string; // Cambiado a string
       name: string;
       email: string;
       role: Role;
     };
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id: string; // Cambiado a string
+    role: Role;
   }
 }
