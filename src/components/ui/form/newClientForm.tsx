@@ -10,55 +10,56 @@ interface ClientFormProps {
 }
 
 const ClientForm: React.FC<ClientFormProps> = ({ onClose, onClientAdded }) => {
-  const [formData, setFormData] = useState<Client>({
-    id: 0, // El id será generado en el backend
+  const [formData, setFormData] = useState<Partial<Client>>({
     name: "",
-    email: null,
-    phone: null,
-    address: null,
-    taxId: null,
-    documentType: null,
-    document: null,
-    personType: null,
-    regime: null,
-    country: null,
-    department: null,
-    city: null,
+    email: "",
+    phone: "",
+    address: "",
+    taxId: "",
+    documentType: "",
+    document: "",
+    personType: "",
+    regime: "",
+    country: "",
+    department: "",
+    city: "",
   });
 
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<Partial<Client>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof Client, string>>>({});
 
   // Maneja los cambios en los campos del formulario
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prevData) => ({
+      ...prevData,
       [name]: value,
-    });
+    }));
   };
 
   // Validación de los campos
-  const validateForm = () => {
-    const formErrors: Partial<Client> = {};
-    if (!formData.name) formErrors.name = "El nombre es obligatorio";
-    if (!formData.email)
+  const validateForm = (): boolean => {
+    const formErrors: Partial<Record<keyof Client, string>> = {};
+
+    if (!formData.name?.trim()) formErrors.name = "El nombre es obligatorio";
+    if (!formData.email?.trim()) {
       formErrors.email = "El correo electrónico es obligatorio";
-    if (!formData.phone) formErrors.phone = "El teléfono es obligatorio";
-    if (!formData.address) formErrors.address = "La dirección es obligatoria";
-    if (!formData.documentType)
-      formErrors.documentType = "El tipo de documento es obligatorio";
-    if (!formData.document)
-      formErrors.document = "El número de documento es obligatorio";
-    if (!formData.personType)
-      formErrors.personType = "El tipo de persona es obligatorio";
+    } else if (
+      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(formData.email)
+    ) {
+      formErrors.email = "El correo electrónico no es válido";
+    }
+    if (!formData.phone?.trim()) formErrors.phone = "El teléfono es obligatorio";
+    if (!formData.address?.trim()) formErrors.address = "La dirección es obligatoria";
+    if (!formData.documentType) formErrors.documentType = "El tipo de documento es obligatorio";
+    if (!formData.document?.trim()) formErrors.document = "El número de documento es obligatorio";
+    if (!formData.personType) formErrors.personType = "El tipo de persona es obligatorio";
     if (!formData.regime) formErrors.regime = "El régimen es obligatorio";
-    if (!formData.country) formErrors.country = "El país es obligatorio";
-    if (!formData.department)
-      formErrors.department = "El departamento es obligatorio";
-    if (!formData.city) formErrors.city = "La ciudad es obligatoria";
+    if (!formData.country?.trim()) formErrors.country = "El país es obligatorio";
+    if (!formData.department?.trim()) formErrors.department = "El departamento es obligatorio";
+    if (!formData.city?.trim()) formErrors.city = "La ciudad es obligatoria";
 
     setErrors(formErrors);
     return Object.keys(formErrors).length === 0;
@@ -73,7 +74,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClose, onClientAdded }) => {
     setLoading(true);
 
     try {
-      const newClient = await createClient(formData); // Llamada al servicio para crear el cliente
+      const newClient = await createClient(formData as Client); // Aseguramos que formData cumple con la interfaz Client
       Swal.fire({
         title: "Cliente creado",
         text: `El cliente ${newClient.name} fue creado exitosamente.`,
@@ -96,8 +97,9 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClose, onClientAdded }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-5">
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        {/* Nombre */}
         <div>
           <label htmlFor="name" className="block font-medium text-gray-700">
             Nombre
@@ -108,15 +110,22 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClose, onClientAdded }) => {
             name="name"
             value={formData.name}
             onChange={handleChange}
-            className="mt-2 p-2 border w-full rounded-md"
+            className={`mt-2 p-2 border w-full rounded-md ${
+              errors.name ? "border-red-500" : "border-gray-300"
+            }`}
             placeholder="Ingrese el nombre"
+            aria-invalid={!!errors.name}
+            aria-describedby="name-error"
             required
           />
           {errors.name && (
-            <span className="text-red-500 text-sm">{errors.name}</span>
+            <span id="name-error" className="text-red-500 text-sm">
+              {errors.name}
+            </span>
           )}
         </div>
 
+        {/* Correo Electrónico */}
         <div>
           <label htmlFor="email" className="block font-medium text-gray-700">
             Correo Electrónico
@@ -125,36 +134,50 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClose, onClientAdded }) => {
             type="email"
             id="email"
             name="email"
-            value={formData.email || ""}
+            value={formData.email}
             onChange={handleChange}
-            className="mt-2 p-2 border w-full rounded-md"
+            className={`mt-2 p-2 border w-full rounded-md ${
+              errors.email ? "border-red-500" : "border-gray-300"
+            }`}
             placeholder="Ingrese el correo electrónico"
+            aria-invalid={!!errors.email}
+            aria-describedby="email-error"
             required
           />
           {errors.email && (
-            <span className="text-red-500 text-sm">{errors.email}</span>
+            <span id="email-error" className="text-red-500 text-sm">
+              {errors.email}
+            </span>
           )}
         </div>
 
+        {/* Teléfono */}
         <div>
           <label htmlFor="phone" className="block font-medium text-gray-700">
             Teléfono
           </label>
           <input
-            type="text"
+            type="tel"
             id="phone"
             name="phone"
-            value={formData.phone || ""}
+            value={formData.phone}
             onChange={handleChange}
-            className="mt-2 p-2 border w-full rounded-md"
+            className={`mt-2 p-2 border w-full rounded-md ${
+              errors.phone ? "border-red-500" : "border-gray-300"
+            }`}
             placeholder="Ingrese el teléfono"
+            aria-invalid={!!errors.phone}
+            aria-describedby="phone-error"
             required
           />
           {errors.phone && (
-            <span className="text-red-500 text-sm">{errors.phone}</span>
+            <span id="phone-error" className="text-red-500 text-sm">
+              {errors.phone}
+            </span>
           )}
         </div>
 
+        {/* Dirección */}
         <div>
           <label htmlFor="address" className="block font-medium text-gray-700">
             Dirección
@@ -163,32 +186,39 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClose, onClientAdded }) => {
             type="text"
             id="address"
             name="address"
-            value={formData.address || ""}
+            value={formData.address}
             onChange={handleChange}
-            className="mt-2 p-2 border w-full rounded-md"
+            className={`mt-2 p-2 border w-full rounded-md ${
+              errors.address ? "border-red-500" : "border-gray-300"
+            }`}
             placeholder="Ingrese la dirección"
+            aria-invalid={!!errors.address}
+            aria-describedby="address-error"
             required
           />
           {errors.address && (
-            <span className="text-red-500 text-sm">{errors.address}</span>
+            <span id="address-error" className="text-red-500 text-sm">
+              {errors.address}
+            </span>
           )}
         </div>
 
-        {/* Tipo de documento */}
+        {/* Tipo de Documento */}
         <div>
-          <label
-            htmlFor="documentType"
-            className="block font-medium text-gray-700"
-          >
+          <label htmlFor="documentType" className="block font-medium text-gray-700">
             Tipo de Documento
           </label>
           <select
             id="documentType"
             name="documentType"
-            value={formData.documentType || ""}
+            value={formData.documentType}
             onChange={handleChange}
+            className={`mt-2 p-2 border w-full rounded-md ${
+              errors.documentType ? "border-red-500" : "border-gray-300"
+            }`}
+            aria-invalid={!!errors.documentType}
+            aria-describedby="documentType-error"
             required
-            className="mt-2 p-2 border w-full rounded-md"
           >
             <option value="">Seleccione</option>
             <option value="CC">Cédula de Ciudadanía</option>
@@ -199,11 +229,13 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClose, onClientAdded }) => {
             <option value="NIT">NIT</option>
           </select>
           {errors.documentType && (
-            <span className="text-red-500 text-sm">{errors.documentType}</span>
+            <span id="documentType-error" className="text-red-500 text-sm">
+              {errors.documentType}
+            </span>
           )}
         </div>
 
-        {/* Número de documento */}
+        {/* Número de Documento */}
         <div>
           <label htmlFor="document" className="block font-medium text-gray-700">
             Número de Documento
@@ -212,38 +244,48 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClose, onClientAdded }) => {
             type="text"
             id="document"
             name="document"
-            value={formData.document || ""}
+            value={formData.document}
             onChange={handleChange}
-            className="mt-2 p-2 border w-full rounded-md"
+            className={`mt-2 p-2 border w-full rounded-md ${
+              errors.document ? "border-red-500" : "border-gray-300"
+            }`}
             placeholder="Ingrese el número de documento"
+            aria-invalid={!!errors.document}
+            aria-describedby="document-error"
             required
           />
           {errors.document && (
-            <span className="text-red-500 text-sm">{errors.document}</span>
+            <span id="document-error" className="text-red-500 text-sm">
+              {errors.document}
+            </span>
           )}
         </div>
 
-        {/* Tipo de persona */}
+        {/* Tipo de Persona */}
         <div>
-          <label
-            htmlFor="personType"
-            className="block font-medium text-gray-700"
-          >
+          <label htmlFor="personType" className="block font-medium text-gray-700">
             Tipo de Persona
           </label>
           <select
             id="personType"
             name="personType"
-            value={formData.personType || ""}
+            value={formData.personType}
             onChange={handleChange}
-            className="mt-2 p-2 border w-full rounded-md"
+            className={`mt-2 p-2 border w-full rounded-md ${
+              errors.personType ? "border-red-500" : "border-gray-300"
+            }`}
+            aria-invalid={!!errors.personType}
+            aria-describedby="personType-error"
+            required
           >
             <option value="">Seleccione</option>
             <option value="Natural">Persona Natural</option>
             <option value="Juridica">Persona Jurídica</option>
           </select>
           {errors.personType && (
-            <span className="text-red-500 text-sm">{errors.personType}</span>
+            <span id="personType-error" className="text-red-500 text-sm">
+              {errors.personType}
+            </span>
           )}
         </div>
 
@@ -255,16 +297,23 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClose, onClientAdded }) => {
           <select
             id="regime"
             name="regime"
-            value={formData.regime || ""}
+            value={formData.regime}
             onChange={handleChange}
-            className="mt-2 p-2 border w-full rounded-md"
+            className={`mt-2 p-2 border w-full rounded-md ${
+              errors.regime ? "border-red-500" : "border-gray-300"
+            }`}
+            aria-invalid={!!errors.regime}
+            aria-describedby="regime-error"
+            required
           >
             <option value="">Seleccione</option>
             <option value="Simplificado">Simplificado</option>
             <option value="Común">Común</option>
           </select>
           {errors.regime && (
-            <span className="text-red-500 text-sm">{errors.regime}</span>
+            <span id="regime-error" className="text-red-500 text-sm">
+              {errors.regime}
+            </span>
           )}
         </div>
 
@@ -277,35 +326,46 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClose, onClientAdded }) => {
             type="text"
             id="country"
             name="country"
-            value={formData.country || ""}
+            value={formData.country}
             onChange={handleChange}
-            className="mt-2 p-2 border w-full rounded-md"
+            className={`mt-2 p-2 border w-full rounded-md ${
+              errors.country ? "border-red-500" : "border-gray-300"
+            }`}
             placeholder="Ingrese el país"
+            aria-invalid={!!errors.country}
+            aria-describedby="country-error"
+            required
           />
           {errors.country && (
-            <span className="text-red-500 text-sm">{errors.country}</span>
+            <span id="country-error" className="text-red-500 text-sm">
+              {errors.country}
+            </span>
           )}
         </div>
 
         {/* Departamento */}
         <div>
-          <label
-            htmlFor="department"
-            className="block font-medium text-gray-700"
-          >
+          <label htmlFor="department" className="block font-medium text-gray-700">
             Departamento
           </label>
           <input
             type="text"
             id="department"
             name="department"
-            value={formData.department || ""}
+            value={formData.department}
             onChange={handleChange}
-            className="mt-2 p-2 border w-full rounded-md"
+            className={`mt-2 p-2 border w-full rounded-md ${
+              errors.department ? "border-red-500" : "border-gray-300"
+            }`}
             placeholder="Ingrese el departamento"
+            aria-invalid={!!errors.department}
+            aria-describedby="department-error"
+            required
           />
           {errors.department && (
-            <span className="text-red-500 text-sm">{errors.department}</span>
+            <span id="department-error" className="text-red-500 text-sm">
+              {errors.department}
+            </span>
           )}
         </div>
 
@@ -318,29 +378,59 @@ const ClientForm: React.FC<ClientFormProps> = ({ onClose, onClientAdded }) => {
             type="text"
             id="city"
             name="city"
-            value={formData.city || ""}
+            value={formData.city}
             onChange={handleChange}
-            className="mt-2 p-2 border w-full rounded-md"
+            className={`mt-2 p-2 border w-full rounded-md ${
+              errors.city ? "border-red-500" : "border-gray-300"
+            }`}
             placeholder="Ingrese la ciudad"
+            aria-invalid={!!errors.city}
+            aria-describedby="city-error"
+            required
           />
           {errors.city && (
-            <span className="text-red-500 text-sm">{errors.city}</span>
+            <span id="city-error" className="text-red-500 text-sm">
+              {errors.city}
+            </span>
           )}
+        </div>
+
+        {/* Tax ID (Opcional) */}
+        <div>
+          <label htmlFor="taxId" className="block font-medium text-gray-700">
+            ID Fiscal (Opcional)
+          </label>
+          <input
+            type="text"
+            id="taxId"
+            name="taxId"
+            value={formData.taxId}
+            onChange={handleChange}
+            className="mt-2 p-2 border border-gray-300 w-full rounded-md"
+            placeholder="Ingrese el ID Fiscal"
+          />
+          {/* Si taxId es obligatorio, descomenta las siguientes líneas:
+          {errors.taxId && (
+            <span className="text-red-500 text-sm">{errors.taxId}</span>
+          )} */}
         </div>
       </div>
 
+      {/* Botones de Acción */}
       <div className="flex justify-end space-x-2">
         <button
           type="button"
           onClick={onClose}
-          className="bg-red-500 text-white px-4 py-2 rounded-md"
+          className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400"
         >
           Cancelar
         </button>
         <button
           type="submit"
           disabled={loading}
-          className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 disabled:bg-gray-300"
+          className={`bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 ${
+            loading ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
           {loading ? "Cargando..." : "Guardar Cliente"}
         </button>

@@ -1,8 +1,8 @@
 // File: C:\Users\Lenovo\Desktop\doctorcelweb\doctorcelweb\src\app\api\auth\validate\route.ts
-import * as entry from '../../../../../../src/app/api/auth/validate/route.js'
-import type { NextRequest } from 'next/server.js'
+import * as entry from '../../../../../../src/app/api/auth/[...nextauth]/route'
+import type { NextRequest } from 'next/server'
 
-type TEntry = typeof import('../../../../../../src/app/api/auth/validate/route.js')
+type TEntry = typeof import('../../../../../../src/app/api/auth/[...nextauth]/route')
 
 // Check that the entry is a valid entry
 checkFields<Diff<{

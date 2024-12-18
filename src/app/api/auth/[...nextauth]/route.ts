@@ -1,13 +1,12 @@
-// src/app/api/auth/[...nextauth]/route.ts
-
-import NextAuth, { NextAuthOptions } from 'next-auth';
+import NextAuth from "next-auth";
+import type { AuthOptions } from "next-auth";
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import prisma from '@/lib/prisma';
 import bcrypt from 'bcryptjs';
 import { Role } from '@prisma/client';
 
-const authOptions: NextAuthOptions = {
+const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -16,29 +15,34 @@ const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email", placeholder: "email@example.com" },
         password: { label: "Password", type: "password" }
       },
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
           throw new Error('Email and password are required');
         }
 
-        // Buscar al usuario en la base de datos
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+          where: { email: credentials.email as string },
         });
 
         if (!user) {
           throw new Error('No user found with the given email');
         }
 
-        // Verificar la contraseña
-        const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
+        const isPasswordValid = await bcrypt.compare(
+          credentials.password as string, 
+          user.password
+        );
 
         if (!isPasswordValid) {
           throw new Error('Invalid password');
         }
 
-        // Retornar los datos del usuario con id como cadena
-        return { id: user.id, name: user.name, email: user.email, role: user.role };
+        return { 
+          id: user.id, 
+          name: user.name, 
+          email: user.email, 
+          role: user.role 
+        };
       }
     })
   ],
@@ -47,7 +51,6 @@ const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user }) {
-      // Agregar el rol al token
       if (user) {
         token.id = user.id;
         token.role = user.role;
@@ -55,7 +58,6 @@ const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      // Agregar el rol y id al objeto de sesión
       if (token && session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as Role;

@@ -51,17 +51,17 @@ export interface TechService {
 export interface Client {
   id: number;
   name: string;
-  email?: string;
-  phone?: string;
-  address?: string;
-  taxId?: string;
-  documentType?: string;
-  document?: string;
-  personType?: string;
-  regime?: string;
-  country?: string;
-  department?: string;
-  city?: string;
+  email: string;
+  phone: string;
+  address: string;
+  taxId: string;
+  documentType: string;
+  document: string;
+  personType: string;
+  regime: string;
+  country: string;
+  department: string;
+  city: string;
   active: ActiveStatus;
   invoices: Invoice[];
   orders: Order[];
@@ -70,16 +70,17 @@ export interface Client {
 
 export interface CreateClientInput {
   name: string;
-  email: string;
-  phone?: string;
-  address?: string;
-  documentType?: string;
-  personType?: string;
-  regime?: string;
-  country?: string;
-  department?: string;
-  city?: string;
-  document: string;
+  email: string | null;
+  phone: string | null;
+  address: string | null;
+  taxId: string | null;
+  documentType: string | null;
+  document: string | null;
+  personType: string | null;
+  regime: string | null;
+  country: string | null;
+  department: string | null;
+  city: string | null;
 }
 
 export interface UpdateClientInput {

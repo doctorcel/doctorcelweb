@@ -18,7 +18,7 @@ const UserManagement: React.FC = () => {
     password: '',
     role: 'SELLER',
   });
-  const [editingUserId, setEditingUserId] = useState<number | null>(null);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -91,7 +91,7 @@ const UserManagement: React.FC = () => {
     setEditingUserId(user.id);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this user?')) return;
 
     try {

@@ -70,7 +70,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     const updatedUser = await prisma.user.update({
-      where: { id: Number(id) },
+      where: { id: String(id) },
       data: updateData,
       select: { id: true, name: true, email: true, role: true }
     });
@@ -89,7 +89,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const { id } = await request.json();
     await prisma.user.delete({
-      where: { id: Number(id) },
+      where: { id: String(id) },
     });
 
     return NextResponse.json({ message: 'User deleted successfully' });
