@@ -8,18 +8,19 @@ export const getWarehouses = async (): Promise<Warehouse[]> => {
     const response = await fetch('/api/warehouses', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`, // Asegúrate de obtener el token de un lugar seguro
+        'Content-Type': 'application/json',
       },
     });
     
     if (!response.ok) {
-      throw new Error('Error al obtener las bodegas');
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error al obtener las bodegas');
     }
 
     const data: Warehouse[] = await response.json();
     return data;
   } catch (error) {
-    console.error(error);
+    console.error('Error al obtener las bodegas:', error);
     throw error;
   }
 };
@@ -31,19 +32,20 @@ export const createWarehouse = async (name: string, description: string): Promis
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`, // Asegúrate de obtener el token de un lugar seguro
       },
       body: JSON.stringify({ name, description }),
+      // Las cookies de sesión se envían automáticamente
     });
 
     if (!response.ok) {
-      throw new Error('Error al crear la bodega');
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error al crear la bodega');
     }
 
     const data: Warehouse = await response.json();
     return data;
   } catch (error) {
-    console.error(error);
+    console.error('Error al crear la bodega:', error);
     throw error;
   }
 };
@@ -55,19 +57,20 @@ export const updateWarehouse = async (id: number, name: string, description: str
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`, // Asegúrate de obtener el token de un lugar seguro
       },
       body: JSON.stringify({ name, description }),
+      // Las cookies de sesión se envían automáticamente
     });
 
     if (!response.ok) {
-      throw new Error('Error al actualizar la bodega');
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error al actualizar la bodega');
     }
 
     const data: Warehouse = await response.json();
     return data;
   } catch (error) {
-    console.error(error);
+    console.error('Error al actualizar la bodega:', error);
     throw error;
   }
 };
@@ -78,17 +81,19 @@ export const deleteWarehouse = async (id: number): Promise<void> => {
     const response = await fetch(`/api/warehouses?id=${id}`, {
       method: 'DELETE',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`, // Asegúrate de obtener el token de un lugar seguro
+        'Content-Type': 'application/json',
       },
+      // Las cookies de sesión se envían automáticamente
     });
 
     if (!response.ok) {
-      throw new Error('Error al eliminar la bodega');
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error al eliminar la bodega');
     }
 
     await response.json(); // Si es necesario
   } catch (error) {
-    console.error(error);
+    console.error('Error al eliminar la bodega:', error);
     throw error;
   }
 };

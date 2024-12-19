@@ -1,6 +1,10 @@
-import { useEffect, useState } from "react";
+"use client";
+
+import React, { useEffect, useState } from "react";
+import { useSession } from "next-auth/react"; // Importar useSession
 import { useInvoiceStore } from "@/stores/useStore";
 import { generatePDF } from "@/utils/pdfGenerator";
+
 
 type Client = {
   id: number;
@@ -33,9 +37,9 @@ interface Warehouse {
   articles: Article[];
 }
 
-
 const InvoiceForm = () => {
   const { setClient, addItem, removeItem, items, client } = useInvoiceStore();
+  const { data: session, status } = useSession(); // Usar useSession
   const [clients, setClients] = useState<Client[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
@@ -53,54 +57,72 @@ const InvoiceForm = () => {
   const [filteredClients, setFilteredClients] = useState<Client[]>([]);
   const [filteredArticles, setFilteredArticles] = useState<Article[]>([]);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const clientsResponse = await fetch("/api/client");
-        if (!clientsResponse.ok) {
-          throw new Error("Error al obtener los clientes");
-        }
-        const clientsData: Client[] = await clientsResponse.json();
-        setClients(clientsData);
+  const [error, setError] = useState<string | null>(null);
 
-        const articlesResponse = await fetch("/api/articles");
-        if (!articlesResponse.ok) {
-          throw new Error("Error al obtener los artículos");
-        }
-        const articlesData: Article[] = await articlesResponse.json();
-        setArticles(articlesData);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchData();
-  }, []);
 
   useEffect(() => {
-    const fetchWarehouses = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          throw new Error("Token no encontrado");
-        }
-        const response = await fetch("/api/warehouses", {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        if (!response.ok) {
-          throw new Error("Error al obtener las bodegas");
-        }
-        const data: Warehouse[] = await response.json();
-        setWarehouses(data);
-      } catch (error) {
-        console.error(error);
+    if (status === "authenticated") {
+      fetchData();
+      fetchWarehouses();
+    }
+  }, [status]);
+
+  const fetchData = async () => {
+    try {
+      const clientsResponse = await fetch("/api/client", {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        // Las cookies de sesión se envían automáticamente
+      });
+      if (!clientsResponse.ok) {
+        throw new Error("Error al obtener los clientes");
       }
-    };
-    fetchWarehouses();
-  }, []);
+      const clientsData: Client[] = await clientsResponse.json();
+      setClients(clientsData);
+
+      const articlesResponse = await fetch("/api/articles", {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        // Las cookies de sesión se envían automáticamente
+      });
+      if (!articlesResponse.ok) {
+        throw new Error("Error al obtener los artículos");
+      }
+      const articlesData: Article[] = await articlesResponse.json();
+      setArticles(articlesData);
+    } catch (error) {
+      console.error(error);
+      setError(
+        error instanceof Error ? error.message : "Error al obtener datos iniciales"
+      );
+    }
+  };
+
+  const fetchWarehouses = async () => {
+    try {
+      const response = await fetch("/api/warehouses", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        // Las cookies de sesión se envían automáticamente
+        // Si tu frontend y backend están en diferentes dominios, añade:
+        // credentials: "include",
+      });
+      if (!response.ok) {
+        throw new Error("Error al obtener las bodegas");
+      }
+      const data: Warehouse[] = await response.json();
+      setWarehouses(data);
+    } catch (error) {
+      console.error("Error fetching warehouses:", error);
+      setError(
+        error instanceof Error ? error.message : "Error fetching warehouses"
+      );
+    }
+  };
 
   const handleAddItem = () => {
     if (!selectedArticle) return;
@@ -137,7 +159,6 @@ const InvoiceForm = () => {
 
   const totalAmount = items.reduce((total, item) => total + item.subtotal, 0);
 
-
   const handleGenerateInvoice = async () => {
     if (!client || !selectedWarehouse || items.length === 0) {
       alert("Debes seleccionar un cliente, un almacén y agregar al menos un artículo.");
@@ -153,7 +174,7 @@ const InvoiceForm = () => {
       clientAddress: client.address || "",
       clientPhone: client.phone || "",
       clientEmail: client.email || "",
-      clientTaxId: client.document || "",
+      clientTaxId: client.taxId || "",
       warehouseId: selectedWarehouse.id,
       items: items.map((item) => ({
         articleId: item.articleId,
@@ -174,6 +195,7 @@ const InvoiceForm = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(invoiceData),
+        // Las cookies de sesión se envían automáticamente
       });
 
       if (response.ok) {
@@ -211,14 +233,9 @@ const InvoiceForm = () => {
   const resetForm = () => {
     setClient(null);
     setSelectedWarehouse(null);
-    setItems([]);
+    // Resetear los items en el store
+    items.forEach((item) => removeItem(item.articleId));
     setNotes("");
-  };
-
-  const setItems = (newItems: InvoiceItem[]) => {
-    // Si estás utilizando un store, ajusta esta función según tu implementación
-    // Aquí asumimos que tienes un método para resetear los items
-    items.length = 0;
   };
 
   const handleClientSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -255,225 +272,242 @@ const InvoiceForm = () => {
     // No limpiamos la lista para mantener la selección visible
   };
 
+  // Manejo de formularios y estados adicionales (si aplica)
+  // ...
+
   return (
     <div className="p-2 w-full mx-auto bg-gray-300 rounded-lg shadow-md text-gray-900 dark:bg-gray-900 dark:text-gray-200 flex flex-col lg:flex-row">
       {/* Loader */}
       {isLoading && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="text-white text-xl">
             Generando factura, por favor espera...
           </div>
         </div>
       )}
-      <div className="w-full px-4 py-4 lg:w-8/12 lg:px-4">
-        {/* Warehouse Selection */}
-        <div className="mb-6">
-          <label htmlFor="warehouse" className="block text-gray-900 dark:text-gray-200">
-            Selecciona un almacén
-          </label>
-          <select
-            id="warehouse"
-            value={selectedWarehouse?.id || ""}
-            onChange={(e) =>
-              setSelectedWarehouse(
-                warehouses.find(
-                  (warehouse) => warehouse.id === Number(e.target.value)
-                ) || null
-              )
-            }
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-gray-900 dark:text-gray-200"
-          >
-            <option value="">Seleccione un almacén</option>
-            {warehouses.map((warehouse) => (
-              <option key={warehouse.id} value={warehouse.id}>
-                {warehouse.name}
-              </option>
-            ))}
-          </select>
-        </div>
 
-        {/* Client Search */}
-        <div className="mb-6">
-          <label htmlFor="client" className="block text-gray-900 dark:text-gray-200">
-            Busca un cliente
-          </label>
-          <input
-            id="client"
-            type="text"
-            value={searchClient}
-            onChange={handleClientSearch}
-            placeholder="Buscar cliente"
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-gray-900 dark:text-gray-200"
-          />
-          {filteredClients.length > 0 && (
-            <ul className="mt-2 max-h-32 overflow-y-auto bg-gray-400 dark:bg-gray-800 rounded-md">
-              {filteredClients.map((clientItem) => (
-                <li
-                  key={clientItem.id}
-                  onClick={() => handleSelectClient(clientItem)}
-                  className={`p-2 hover:bg-gray-400 cursor-pointer ${
-                    client && client.id === clientItem.id ? "bg-gray-400 dark:bg-gray-800" : ""
-                  }`}
-                >
-                  {clientItem.name}
-                </li>
-              ))}
-            </ul>
-          )}
-          {client && (
-            <div className="mt-2 p-2 bg-gray-400/40 dark:bg-gray-700 rounded-md">
-              Cliente Seleccionado: <strong>{client.name}</strong>
+      {/* Mostrar mensaje de autenticación */}
+      {status === "loading" ? (
+        <div className="flex justify-center items-center w-full h-full">
+          <p>Cargando...</p>
+        </div>
+      ) : status === "unauthenticated" ? (
+        <div className="flex justify-center items-center w-full h-full">
+          <p>No estás autenticado. Por favor, inicia sesión.</p>
+        </div>
+      ) : (
+        <>
+          <div className="w-full px-4 py-4 lg:w-8/12 lg:px-4">
+            {/* Warehouse Selection */}
+            <div className="mb-6">
+              <label htmlFor="warehouse" className="block text-gray-900 dark:text-gray-200">
+                Selecciona un almacén
+              </label>
+              <select
+                id="warehouse"
+                value={selectedWarehouse?.id || ""}
+                onChange={(e) =>
+                  setSelectedWarehouse(
+                    warehouses.find(
+                      (warehouse) => warehouse.id === Number(e.target.value)
+                    ) || null
+                  )
+                }
+                className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-gray-900 dark:text-gray-200"
+              >
+                <option value="">Seleccione un almacén</option>
+                {warehouses.map((warehouse) => (
+                  <option key={warehouse.id} value={warehouse.id}>
+                    {warehouse.name}
+                  </option>
+                ))}
+              </select>
             </div>
-          )}
-        </div>
 
-        {/* Article Search */}
-        <div className="mb-6">
-          <label htmlFor="article" className="block text-gray-900 dark:text-gray-200">
-            Busca un artículo
-          </label>
-          <input
-            id="article"
-            type="text"
-            value={searchArticle}
-            onChange={handleArticleSearch}
-            placeholder="Buscar artículo"
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-gray-900 dark:text-gray-200"
-          />
-          {filteredArticles.length > 0 && (
-            <ul className="mt-2 max-h-32 overflow-y-auto bg-gray-400/40 dark:bg-gray-800 rounded-md">
-              {filteredArticles.map((article) => (
-                <li
-                  key={article.id}
-                  onClick={() => handleSelectArticle(article)}
-                  className={`p-2 hover:bg-gray-400 cursor-pointer ${
-                    selectedArticle?.id === article.id ? "bg-gray-400 dark:bg-gray-700" : ""
-                  }`}
-                >
-                  {article.name} - ${article.price}
-                </li>
-              ))}
-            </ul>
-          )}
-          {selectedArticle && (
-            <div className="mt-2 p-2 bg-gray-400 dark:bg-gray-700 rounded-md">
-              Artículo Seleccionado: <strong>{selectedArticle.name}</strong>
+            {/* Client Search */}
+            <div className="mb-6">
+              <label htmlFor="client" className="block text-gray-900 dark:text-gray-200">
+                Busca un cliente
+              </label>
+              <input
+                id="client"
+                type="text"
+                value={searchClient}
+                onChange={handleClientSearch}
+                placeholder="Buscar cliente"
+                className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-gray-900 dark:text-gray-200"
+              />
+              {filteredClients.length > 0 && (
+                <ul className="mt-2 max-h-32 overflow-y-auto bg-gray-400 dark:bg-gray-800 rounded-md">
+                  {filteredClients.map((clientItem) => (
+                    <li
+                      key={clientItem.id}
+                      onClick={() => handleSelectClient(clientItem)}
+                      className={`p-2 hover:bg-gray-400 cursor-pointer ${
+                        client && client.id === clientItem.id ? "bg-gray-400 dark:bg-gray-800" : ""
+                      }`}
+                    >
+                      {clientItem.name}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {client && (
+                <div className="mt-2 p-2 bg-gray-400/40 dark:bg-gray-700 rounded-md">
+                  Cliente Seleccionado: <strong>{client.name}</strong>
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        {/* Quantity Input */}
-        <div className="mb-6">
-          <label htmlFor="quantity" className="block text-gray-900 dark:text-gray-200">
-            Cantidad
-          </label>
-          <input
-            id="quantity"
-            type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(Number(e.target.value))}
-            min={1}
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-gray-900 dark:text-gray-200"
-          />
-        </div>
+            {/* Article Search */}
+            <div className="mb-6">
+              <label htmlFor="article" className="block text-gray-900 dark:text-gray-200">
+                Busca un artículo
+              </label>
+              <input
+                id="article"
+                type="text"
+                value={searchArticle}
+                onChange={handleArticleSearch}
+                placeholder="Buscar artículo"
+                className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-gray-900 dark:text-gray-200"
+              />
+              {filteredArticles.length > 0 && (
+                <ul className="mt-2 max-h-32 overflow-y-auto bg-gray-400/40 dark:bg-gray-800 rounded-md">
+                  {filteredArticles.map((article) => (
+                    <li
+                      key={article.id}
+                      onClick={() => handleSelectArticle(article)}
+                      className={`p-2 hover:bg-gray-400 cursor-pointer ${
+                        selectedArticle?.id === article.id ? "bg-gray-400 dark:bg-gray-700" : ""
+                      }`}
+                    >
+                      {article.name} - ${article.price}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {selectedArticle && (
+                <div className="mt-2 p-2 bg-gray-400 dark:bg-gray-700 rounded-md">
+                  Artículo Seleccionado: <strong>{selectedArticle.name}</strong>
+                </div>
+              )}
+            </div>
 
-        {/* Discount Input */}
-        <div className="mb-6">
-          <label htmlFor="discount" className="block text-gray-900 dark:text-gray-200">
-            Descuento (Opcional)
-          </label>
-          <input
-            id="discount"
-            type="number"
-            value={discount}
-            onChange={(e) => setDiscount(Number(e.target.value))}
-            min={0}
-            className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-gray-900 dark:text-gray-200"
-            placeholder="Ingrese descuento si aplica"
-          />
-        </div>
+            {/* Quantity Input */}
+            <div className="mb-6">
+              <label htmlFor="quantity" className="block text-gray-900 dark:text-gray-200">
+                Cantidad
+              </label>
+              <input
+                id="quantity"
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(Number(e.target.value))}
+                min={1}
+                className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-gray-900 dark:text-gray-200"
+              />
+            </div>
 
-        {/* Add Item Button */}
-        <button
-          onClick={handleAddItem}
-          disabled={!selectedArticle}
-          className={`w-full p-2 bg-blue-900 dark:bg-green-900 text-base lg:text-sm text-gray-100 dark:hover:bg-green-700 dark:text-white rounded-md mt-6 ${
-            !selectedArticle ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-        >
-          Agregar Artículo
-        </button>
-      </div>
-      <div className="w-full px-4 py-4 lg:w-4/12">
-        {/* Invoice Items List */}
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-200">
-            Artículos Facturados
-          </h3>
-          {items.length > 0 ? (
-            <ul className="space-y-4 mt-4">
-              {items.map((item) => (
-                <li
-                  key={item.articleId}
-                  className="flex justify-between gap-2 items-center bg-gray-400 dark:bg-gray-700 rounded-md p-2 mt-2 text-gray-800 dark:text-gray-200"
-                >
-                  <div className="flex flex-col w-8/12 justify-between text-sm text-gray-800 dark:text-gray-200">
-                      <div>
-                        {item.name} x {item.quantity} {" "}
-                        <strong>${item.subtotal}</strong>
+            {/* Discount Input */}
+            <div className="mb-6">
+              <label htmlFor="discount" className="block text-gray-900 dark:text-gray-200">
+                Descuento (Opcional)
+              </label>
+              <input
+                id="discount"
+                type="number"
+                value={discount}
+                onChange={(e) => setDiscount(Number(e.target.value))}
+                min={0}
+                className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-gray-900 dark:text-gray-200"
+                placeholder="Ingrese descuento si aplica"
+              />
+            </div>
+
+            {/* Add Item Button */}
+            <button
+              onClick={handleAddItem}
+              disabled={!selectedArticle}
+              className={`w-full p-2 bg-blue-900 dark:bg-green-900 text-base lg:text-sm text-gray-100 dark:hover:bg-green-700 dark:text-white rounded-md mt-6 ${
+                !selectedArticle ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+            >
+              Agregar Artículo
+            </button>
+          </div>
+          <div className="w-full px-4 py-4 lg:w-4/12">
+            {/* Invoice Items List */}
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-200">
+                Artículos Facturados
+              </h3>
+              {items.length > 0 ? (
+                <ul className="space-y-4 mt-4">
+                  {items.map((item) => (
+                    <li
+                      key={item.articleId}
+                      className="flex justify-between gap-2 items-center bg-gray-400 dark:bg-gray-700 rounded-md p-2 mt-2 text-gray-800 dark:text-gray-200"
+                    >
+                      <div className="flex flex-col w-8/12 justify-between text-sm text-gray-800 dark:text-gray-200">
+                        <div>
+                          {item.name} x {item.quantity} {" "}
+                          <strong>${item.subtotal.toFixed(2)}</strong>
+                        </div>
+                        {item.discount > 0 && `Descuento: $${item.discount.toFixed(2)}`}
                       </div>
-                      {item.discount > 0 && `Descuento: $${item.discount}`}
-                  </div>
 
-                  <button
-                    onClick={() => handleRemoveItem(item.articleId)}
-                    className="bg-red-500 text-white hover:bg-red-700 rounded px-4 "
-                  >
-                    Eliminar
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-4 text-gray-800 dark:text-gray-200">No hay artículos agregados.</p>
-          )}
-        </div>
+                      <button
+                        onClick={() => handleRemoveItem(item.articleId)}
+                        className="bg-red-500 text-white hover:bg-red-700 rounded px-4"
+                      >
+                        Eliminar
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-4 text-gray-800 dark:text-gray-200">No hay artículos agregados.</p>
+              )}
+            </div>
 
-        {/* Total */}
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-            Total: ${totalAmount}
-          </h3>
-        </div>
+            {/* Total */}
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                Total: ${totalAmount.toFixed(2)}
+              </h3>
+            </div>
 
-        {/* Notes Input */}
-        <div className="mt-6">
-      <label htmlFor="notes" className="block text-gray-300 dark:text-gray-200">
-        Notas adicionales (Opcional)
-      </label>
-      <textarea
-        id="notes"
-        value={notes}
-        onChange={(e) => setNotes(e.target.value)}
-        placeholder="Escribe aquí notas adicionales, por ejemplo, información de garantía."
-        className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-gray-900 dark:text-gray-200"
-        rows={4}
-      />
-    </div>
+            {/* Notes Input */}
+            <div className="mt-6">
+              <label htmlFor="notes" className="block text-gray-300 dark:text-gray-200">
+                Notas adicionales (Opcional)
+              </label>
+              <textarea
+                id="notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Escribe aquí notas adicionales, por ejemplo, información de garantía."
+                className="mt-1 block w-full p-2 border border-gray-300 rounded-md text-gray-900 dark:text-gray-200"
+                rows={4}
+              />
+            </div>
 
-        {/* Generate Invoice Button */}
-        <button
-          onClick={handleGenerateInvoice}
-          disabled={!client || !selectedWarehouse || items.length === 0}
-          className={`w-full p-2 bg-blue-900 dark:bg-green-900 text-base lg:text-sm text-gray-100 dark:hover:bg-green-700 dark:text-white rounded-md mt-6 ${
-            !client || !selectedWarehouse || items.length === 0
-              ? "opacity-50 cursor-not-allowed"
-              : ""
-          }`}
-        >
-          Generar Factura
-        </button>
-      </div>
+            {/* Generate Invoice Button */}
+            <button
+              onClick={handleGenerateInvoice}
+              disabled={!client || !selectedWarehouse || items.length === 0}
+              className={`w-full p-2 bg-blue-900 dark:bg-green-900 text-base lg:text-sm text-gray-100 dark:hover:bg-green-700 dark:text-white rounded-md mt-6 ${
+                !client || !selectedWarehouse || items.length === 0
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
+              }`}
+            >
+              Generar Factura
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 };

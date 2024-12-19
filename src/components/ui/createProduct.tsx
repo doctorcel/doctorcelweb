@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { CldImage } from "next-cloudinary";
 import { Plus } from "lucide-react";
-import {Button} from "@/components/ui/button/button";
+import { Button } from "@/components/ui/button/button";
 import Modal from "@/components/ui/modal/modal";
+import { useSession } from "next-auth/react";
 
 interface Article {
   id?: number;
@@ -63,6 +64,7 @@ const storageOptions = [
 ]; // Opciones de almacenamiento
 
 export default function CreateProduct() {
+  const { data: session, status } = useSession();
   const [articles, setArticles] = useState<Article[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
@@ -90,10 +92,12 @@ export default function CreateProduct() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchArticles();
-    fetchCategories();
-    fetchWarehouses();
-  }, []);
+    if (status === "authenticated") {
+      fetchArticles();
+      fetchCategories();
+      fetchWarehouses();
+    }
+  }, [status]);
 
   useEffect(() => {
     if (currentArticle) {
@@ -121,20 +125,14 @@ export default function CreateProduct() {
     }
   }, [currentWarehouse]);
 
-  const getToken = () => {
-    return localStorage.getItem("token");
-  };
-
   const fetchArticles = async () => {
     try {
-      const token = getToken();
-      if (!token) {
-        throw new Error("No authentication token found");
-      }
       const response = await fetch("/api/articles", {
         headers: {
-          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
+        // Las cookies de sesión se envían automáticamente
+        // Si estás en un entorno CORS, puedes necesitar 'credentials': 'include'
       });
       if (!response.ok) throw new Error("Error al cargar los artículos");
       const data = await response.json();
@@ -149,14 +147,11 @@ export default function CreateProduct() {
 
   const fetchCategories = async () => {
     try {
-      const token = getToken();
-      if (!token) {
-        throw new Error("No authentication token found");
-      }
       const response = await fetch("/api/categories", {
         headers: {
-          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
+        // Las cookies de sesión se envían automáticamente
       });
       if (!response.ok) throw new Error("Error al cargar las categorías");
       const data = await response.json();
@@ -171,14 +166,11 @@ export default function CreateProduct() {
 
   const fetchWarehouses = async () => {
     try {
-      const token = getToken();
-      if (!token) {
-        throw new Error("No authentication token found");
-      }
       const response = await fetch("/api/warehouses", {
         headers: {
-          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
+        // Las cookies de sesión se envían automáticamente
       });
       if (!response.ok) throw new Error("Error al cargar las bodegas");
       const data = await response.json();
@@ -222,16 +214,10 @@ export default function CreateProduct() {
 
     try {
       setUploadError(null);
-      const token = getToken();
-      if (!token) {
-        throw new Error("No authentication token found");
-      }
       const response = await fetch("/api/upload", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
         body: formData,
+        // Las cookies de sesión se envían automáticamente
       });
 
       if (!response.ok) {
@@ -259,10 +245,6 @@ export default function CreateProduct() {
   const handleArticleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const token = getToken();
-      if (!token) {
-        throw new Error("No authentication token found");
-      }
       const dataToSend = {
         ...articleFormData,
         price: parseFloat(articleFormData.price.toString()),
@@ -289,9 +271,9 @@ export default function CreateProduct() {
         method: method,
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(dataToSend),
+        // Las cookies de sesión se envían automáticamente
       });
 
       if (!response.ok) throw new Error("Error al guardar el artículo");
@@ -302,6 +284,16 @@ export default function CreateProduct() {
       setError(error instanceof Error ? error.message : "Error saving article");
     }
   };
+
+  // Si la sesión está cargando, muestra un indicador de carga
+  if (status === "loading") {
+    return <div>Cargando...</div>;
+  }
+
+  // Si el usuario no está autenticado, muestra un mensaje o redirige
+  if (status === "unauthenticated") {
+    return <div>No estás autenticado. Por favor, inicia sesión.</div>;
+  }
 
   return (
     <div>
@@ -321,7 +313,7 @@ export default function CreateProduct() {
         onClose={() => setIsArticleModalOpen(false)}
       >
         <h3 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
-          Añadir Artículo
+          {currentArticle ? "Actualizar Artículo" : "Añadir Artículo"}
         </h3>
         <form
           onSubmit={handleArticleSubmit}
@@ -350,6 +342,7 @@ export default function CreateProduct() {
               onChange={handleArticleInputChange}
               placeholder="Precio"
               required
+              step="0.01"
               className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
             <input
@@ -359,6 +352,7 @@ export default function CreateProduct() {
               onChange={handleArticleInputChange}
               placeholder="Costo"
               required
+              step="0.01"
               className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
             <input
