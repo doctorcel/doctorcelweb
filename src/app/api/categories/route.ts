@@ -1,75 +1,75 @@
 // app/api/categories/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import  prisma from '@/lib/prisma';
 
-export async function GET() {
+import { NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+export async function GET(req: NextRequest) {
+  // Obtener la sesión del usuario
+  const session = await getServerSession(authOptions);
+
+  // Verificar si el usuario está autenticado
+  if (!session) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
+  // Verificar si el usuario tiene rol ADMIN
+  if (session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Acceso denegado" }, { status: 403 });
+  }
+
   try {
-    const categories = await prisma.category.findMany();
-    return NextResponse.json(categories);
+    const categories = await prisma.category.findMany({
+      where: { active: "ENABLED" },
+      include: { subcategories: true },
+    });
+    return NextResponse.json(categories, { status: 200 });
   } catch (error) {
-    console.error('Error fetching categories:', error);
-    return NextResponse.json({ error: 'Error fetching categories' }, { status: 500 });
+    console.error("Error al obtener las categorías:", error);
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 }
+    );
   }
 }
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
+export async function POST(req: NextRequest) {
+  // Obtener la sesión del usuario
+  const session = await getServerSession(authOptions);
 
-    if (!body.name) {
-      return NextResponse.json({ error: 'Category name is required' }, { status: 400 });
+  // Verificar si el usuario está autenticado
+  if (!session) {
+    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
+  // Verificar si el usuario tiene rol ADMIN
+  if (session.user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Acceso denegado" }, { status: 403 });
+  }
+
+  try {
+    const { name, active } = await req.json();
+
+    // Validar que el nombre esté presente
+    if (!name) {
+      return NextResponse.json(
+        { error: "El nombre es requerido" },
+        { status: 400 }
+      );
     }
 
+    // Crear la nueva categoría
     const category = await prisma.category.create({
-      data: {
-        name: body.name,
-      },
+      data: { name, active: active || "ENABLED" },
     });
 
     return NextResponse.json(category, { status: 201 });
   } catch (error) {
-    console.error('Error creating category:', error);
-    return NextResponse.json({ error: 'Error creating category' }, { status: 500 });
-  }
-}
-
-export async function PATCH(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { id, name } = body;
-
-    if (!id || !name) {
-      return NextResponse.json({ error: 'Category ID and name are required' }, { status: 400 });
-    }
-
-    const updatedCategory = await prisma.category.update({
-      where: { id: parseInt(id) },
-      data: { name },
-    });
-
-    return NextResponse.json(updatedCategory);
-  } catch (error) {
-    console.error('Error updating category:', error);
-    return NextResponse.json({ error: 'Error updating category' }, { status: 500 });
-  }
-}
-
-export async function DELETE(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    if (!id) {
-      return NextResponse.json({ error: 'Category ID is required' }, { status: 400 });
-    }
-
-    await prisma.category.delete({
-      where: { id: parseInt(id) },
-    });
-
-    return NextResponse.json({ message: 'Category deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting category:', error);
-    return NextResponse.json({ error: 'Error deleting category' }, { status: 500 });
+    console.error("Error al crear la categoría:", error);
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
+      { status: 500 }
+    );
   }
 }

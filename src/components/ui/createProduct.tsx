@@ -1,11 +1,22 @@
-"use client";
+// components/ui/createProduct.tsx
 
+'use client';
 import React, { useState, useEffect } from "react";
 import { CldImage } from "next-cloudinary";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button/button";
 import Modal from "@/components/ui/modal/modal";
 import { useSession } from "next-auth/react";
+import {
+  getSubcategoriesByCategory,
+  getCategories,
+  getWarehouses,
+  fetcher,
+} from "@/lib/apiService";
+
+interface CreateProductProps {
+  onProductCreated: () => void;
+}
 
 interface Article {
   id?: number;
@@ -15,6 +26,7 @@ interface Article {
   cost: number | string;
   categoryId: number;
   warehouseId: number;
+  subcategoryId?: number;
   camera?: string;
   frontCamera?: string;
   ram?: string;
@@ -33,8 +45,7 @@ interface Article {
   brand?: string;
   financialEntity?: string;
   offerPrice?: number;
-
-  // Firma de índice para permitir acceder a cualquier propiedad con nombre de string
+  
   [key: string]: any;
 }
 
@@ -49,7 +60,7 @@ interface Warehouse {
   description?: string;
 }
 
-const ramOptions = ["2GB", "4GB", "8GB", "16GB", "32GB"]; // Opciones de RAM
+const ramOptions = ["2GB", "4GB", "8GB", "16GB", "32GB"];
 const storageOptions = [
   "4GB",
   "8GB",
@@ -61,19 +72,16 @@ const storageOptions = [
   "512GB",
   "1TB",
   "2TB",
-]; // Opciones de almacenamiento
+];
 
-export default function CreateProduct() {
+export default function CreateProduct({ onProductCreated }: CreateProductProps) {
   const { data: session, status } = useSession();
   const [articles, setArticles] = useState<Article[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [subcategories, setSubcategories] = useState<{ id: number; name: string }[]>([]);
   const [isArticleModalOpen, setIsArticleModalOpen] = useState(false);
-  const [isWarehouseModalOpen, setIsWarehouseModalOpen] = useState(false);
   const [currentArticle, setCurrentArticle] = useState<Article | null>(null);
-  const [currentWarehouse, setCurrentWarehouse] = useState<Warehouse | null>(
-    null
-  );
   const [articleFormData, setArticleFormData] = useState<Article>({
     name: "",
     description: "",
@@ -83,13 +91,11 @@ export default function CreateProduct() {
     cost: "",
     categoryId: 0,
     warehouseId: 0,
-  });
-  const [warehouseFormData, setWarehouseFormData] = useState<Warehouse>({
-    name: "",
-    description: "",
+    subcategoryId: undefined,
   });
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isSubcategoriesLoading, setIsSubcategoriesLoading] = useState(false);
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -110,32 +116,26 @@ export default function CreateProduct() {
         cost: "",
         categoryId: 0,
         warehouseId: 0,
+        subcategoryId: undefined,
       });
     }
   }, [currentArticle]);
 
   useEffect(() => {
-    if (currentWarehouse) {
-      setWarehouseFormData(currentWarehouse);
+    if (articleFormData.categoryId) {
+      fetchSubcategories(articleFormData.categoryId);
     } else {
-      setWarehouseFormData({
-        name: "",
-        description: "",
-      });
+      setSubcategories([]);
+      setArticleFormData((prev) => ({
+        ...prev,
+        subcategoryId: undefined,
+      }));
     }
-  }, [currentWarehouse]);
+  }, [articleFormData.categoryId]);
 
   const fetchArticles = async () => {
     try {
-      const response = await fetch("/api/articles", {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // Las cookies de sesión se envían automáticamente
-        // Si estás en un entorno CORS, puedes necesitar 'credentials': 'include'
-      });
-      if (!response.ok) throw new Error("Error al cargar los artículos");
-      const data = await response.json();
+      const data = await fetcher("/api/articles");
       setArticles(data);
     } catch (error) {
       console.error("Error fetching articles:", error);
@@ -147,14 +147,7 @@ export default function CreateProduct() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch("/api/categories", {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // Las cookies de sesión se envían automáticamente
-      });
-      if (!response.ok) throw new Error("Error al cargar las categorías");
-      const data = await response.json();
+      const data = await getCategories();
       setCategories(data);
     } catch (error) {
       console.error("Error fetching categories:", error);
@@ -166,20 +159,28 @@ export default function CreateProduct() {
 
   const fetchWarehouses = async () => {
     try {
-      const response = await fetch("/api/warehouses", {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // Las cookies de sesión se envían automáticamente
-      });
-      if (!response.ok) throw new Error("Error al cargar las bodegas");
-      const data = await response.json();
+      const data = await getWarehouses();
       setWarehouses(data);
     } catch (error) {
       console.error("Error fetching warehouses:", error);
       setError(
         error instanceof Error ? error.message : "Error fetching warehouses"
       );
+    }
+  };
+
+  const fetchSubcategories = async (categoryId: number) => {
+    try {
+      setIsSubcategoriesLoading(true);
+      const data = await getSubcategoriesByCategory(categoryId);
+      setSubcategories(data);
+    } catch (error) {
+      console.error("Error fetching subcategories:", error);
+      setError(
+        error instanceof Error ? error.message : "Error fetching subcategories"
+      );
+    } finally {
+      setIsSubcategoriesLoading(false);
     }
   };
 
@@ -196,8 +197,11 @@ export default function CreateProduct() {
         name === "categoryId" ||
         name === "warehouseId" ||
         name === "Initial" ||
-        name === "offerPrice"
-          ? parseFloat(value) || 0
+        name === "offerPrice" ||
+        name === "subcategoryId"
+          ? value
+            ? parseFloat(value)
+            : undefined
           : value,
     }));
   };
@@ -217,7 +221,6 @@ export default function CreateProduct() {
       const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
-        // Las cookies de sesión se envían automáticamente
       });
 
       if (!response.ok) {
@@ -251,6 +254,9 @@ export default function CreateProduct() {
         cost: parseFloat(articleFormData.cost.toString()),
         categoryId: parseInt(articleFormData.categoryId.toString(), 10),
         warehouseId: parseInt(articleFormData.warehouseId.toString(), 10),
+        subcategoryId: articleFormData.subcategoryId
+          ? parseInt(articleFormData.subcategoryId.toString(), 10)
+          : undefined,
         Initial: articleFormData.Initial,
         price8: articleFormData.price8,
         price12: articleFormData.price12,
@@ -262,9 +268,8 @@ export default function CreateProduct() {
       let method = "POST";
 
       if (currentArticle) {
-        url = `/api/articles?id=${currentArticle.id}`;
+        url = `/api/articles/${currentArticle.id}`;
         method = "PATCH";
-        dataToSend.id = currentArticle.id;
       }
 
       const response = await fetch(url, {
@@ -273,10 +278,15 @@ export default function CreateProduct() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(dataToSend),
-        // Las cookies de sesión se envían automáticamente
       });
 
       if (!response.ok) throw new Error("Error al guardar el artículo");
+      
+      // Si se creó un nuevo producto, notificar a InvoicePage
+      if (!currentArticle) {
+        onProductCreated();
+      }
+
       setIsArticleModalOpen(false);
       fetchArticles();
     } catch (error) {
@@ -285,12 +295,12 @@ export default function CreateProduct() {
     }
   };
 
-  // Si la sesión está cargando, muestra un indicador de carga
+  // Mostrar indicador de carga mientras la sesión se está cargando
   if (status === "loading") {
     return <div>Cargando...</div>;
   }
 
-  // Si el usuario no está autenticado, muestra un mensaje o redirige
+  // Mostrar mensaje si el usuario no está autenticado
   if (status === "unauthenticated") {
     return <div>No estás autenticado. Por favor, inicia sesión.</div>;
   }
@@ -307,7 +317,7 @@ export default function CreateProduct() {
         className="bg-blue-900 dark:bg-green-900 text-xs lg:text-sm text-gray-100 dark:hover:bg-green-700 dark:text-white py-2 px-4 inline-flex items-center"
       />
 
-      {/* Modal for creating/editing article */}
+      {/* Modal para crear/editar artículo */}
       <Modal
         isOpen={isArticleModalOpen}
         onClose={() => setIsArticleModalOpen(false)}
@@ -376,6 +386,27 @@ export default function CreateProduct() {
                 </option>
               ))}
             </select>
+
+            {/* Selección de Subcategoría - Opcional */}
+            <select
+              name="subcategoryId"
+              value={articleFormData.subcategoryId || ""}
+              onChange={handleArticleInputChange}
+              className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+              disabled={isSubcategoriesLoading || subcategories.length === 0}
+            >
+              <option value="">Seleccione una subcategoría (opcional)</option>
+              {subcategories.map((subcategory) => (
+                <option key={subcategory.id} value={subcategory.id}>
+                  {subcategory.name}
+                </option>
+              ))}
+            </select>
+            {isSubcategoriesLoading && <p>Cargando subcategorías...</p>}
+            {subcategories.length === 0 && articleFormData.categoryId !== 0 && !isSubcategoriesLoading && (
+              <p className="text-gray-500">No hay subcategorías disponibles para esta categoría.</p>
+            )}
+
             <select
               name="warehouseId"
               value={articleFormData.warehouseId}
@@ -535,6 +566,11 @@ export default function CreateProduct() {
               className="w-full p-2 border rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
+
+          {/* Mostrar errores generales */}
+          {error && (
+            <p className="text-red-500 dark:text-red-400">{error}</p>
+          )}
 
           <div className="col-span-1 md:col-span-2 flex justify-center space-x-2">
             <Button

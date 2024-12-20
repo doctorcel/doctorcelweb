@@ -26,6 +26,7 @@ export async function POST(request: NextRequest) {
         description: body.description,
         price: parseFloat(body.price),
         categoryId: parseInt(body.categoryId),
+        subcategoryId: parseInt(body.subcategoryId),
         warehouseId: parseInt(body.warehouseId),
         camera: body.camera,
         ram: body.ram,

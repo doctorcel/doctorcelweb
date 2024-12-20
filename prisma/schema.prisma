@@ -87,6 +87,7 @@ model Article {
   description     String
   price           Float
   categoryId      Int
+  subcategoryId   Int?
   camera          String?
   createdAt       DateTime      @default(now())
   price12         Float?
@@ -113,6 +114,7 @@ model Article {
   visible         Visibility    @default(DISABLED)
   active          ActiveStatus  @default(ENABLED)
   category        Category      @relation(fields: [categoryId], references: [id])
+  subcategory     Subcategory?  @relation(fields: [subcategoryId], references: [id])
   warehouse       Warehouse     @relation(fields: [warehouseId], references: [id])
   InvoiceItem     InvoiceItem[]
 }
@@ -128,8 +130,10 @@ model Category {
 model Subcategory {
   id         Int      @id @default(autoincrement())
   name       String
+  active     ActiveStatus  @default(ENABLED)
   categoryId Int
   category   Category @relation(fields: [categoryId], references: [id])
+  Article    Article[]
 }
 
 model Order {
@@ -157,7 +161,6 @@ model TechService {
   observations String?
   password     String?
   active       ActiveStatus @default(ENABLED)
-
   client     Client    @relation(fields: [clientId], references: [id])
   technician User?     @relation("AssignedTechServices", fields: [technicianId], references: [id])
   warehouse  Warehouse @relation(fields: [warehouseId], references: [id])
