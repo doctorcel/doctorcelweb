@@ -116,7 +116,7 @@ const TechServiceList = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos</SelectItem>
-              <SelectItem value="1">Barichara</SelectItem>
+              <SelectItem value="3">Barichara</SelectItem>
               <SelectItem value="2">Arrayanes</SelectItem>
             </SelectContent>
           </Select>

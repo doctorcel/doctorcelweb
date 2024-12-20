@@ -43,16 +43,24 @@ export const getClientById = async (id: number): Promise<Client> => {
   return handleResponse(response);
 };
 
-export const createClient = async (input: CreateClientInput): Promise<Client> => {
-  const response = await fetch(BASE_URL, {
+export async function createClient(clientData: Partial<Client>): Promise<Client> {
+  const response = await fetch('/api/client', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(input),
+    body: JSON.stringify(clientData),
   });
-  return handleResponse(response);
-};
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || 'Error creando el cliente');
+  }
+
+  const data = await response.json();
+  return data;
+}
+
 
 export const updateClient = async (
   id: number,

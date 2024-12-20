@@ -1,4 +1,4 @@
-// components/ui/createClient.tsx
+// components/ui/CreateClient.tsx
 
 'use client';
 import React, { useState } from 'react';
@@ -9,7 +9,7 @@ import { Plus } from "lucide-react";
 import { Client } from '@prisma/client';
 
 interface CreateClientProps {
-  onClientCreated: () => void;
+  onClientCreated: (client: Client) => void; // Actualizado para recibir el nuevo cliente
 }
 
 export default function CreateClient({ onClientCreated }: CreateClientProps) {
@@ -17,7 +17,8 @@ export default function CreateClient({ onClientCreated }: CreateClientProps) {
   
   const handleClientAdded = (client: Client) => {
     // Aquí podrías realizar acciones adicionales si es necesario
-    onClientCreated(); // Notificar a InvoicePage para refrescar ClientManagement
+    onClientCreated(client); // Notificar a TechServiceForm con el nuevo cliente
+    setIsModalOpen(false); // Cerrar el modal
   };
 
   const handleOpenModal = () => {

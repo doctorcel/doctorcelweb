@@ -1,19 +1,7 @@
 import { Status } from '@prisma/client';
+// models/techservice.ts
 
-export interface CreateTechServiceDTO {
-  status: Status;
-  deviceType: string;
-  serialNumber?: string;
-  clientId: number;
-  technicianId?: string | null; // Cambiado de number a string | null
-  warehouseId: number;
-  deliveryDate?: string;
-  brand?: string;
-  color?: string;
-  observations?: string;
-  password?: string;
-  createdAt?: string;
-}
+
 export interface UpdateTechServiceDTO {
   status?: Status;
   deviceType?: string;
@@ -61,3 +49,24 @@ export interface TechServiceDetails {
   password: string | null;
 }
 
+// src/models/techservice.ts
+
+import { z } from 'zod';
+
+export const CreateTechServiceSchema = z.object({
+  status: z.enum(['EN_REPARACION', 'REPARADO', 'ENTREGADO', 'GARANTIA', 'DEVOLUCION']),
+  deviceType: z.string().min(1, 'El tipo de dispositivo es requerido'),
+  serialNumber: z.string().optional(),
+  createdAt: z.string().optional(),
+  clientId: z.number(),
+  technicianId: z.string().optional(),
+  warehouseId: z.number(),
+  deliveryDate: z.string().optional(), // Asegúrate de manejar el formato de fecha
+  brand: z.string().optional(),
+  color: z.string().optional(),
+  observations: z.string().optional(),
+  password: z.string().optional(), // Contraseña del equipo
+  active: z.enum(['ENABLED', 'DISABLED']).optional(),
+});
+
+export type CreateTechServiceDTO = z.infer<typeof CreateTechServiceSchema>;

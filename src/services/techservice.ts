@@ -37,6 +37,7 @@ export const createTechService = async (data: CreateTechServiceDTO): Promise<Tec
   }
 };
 
+
 export async function fetchTechServices({
   page = 1,
   limit = 10,

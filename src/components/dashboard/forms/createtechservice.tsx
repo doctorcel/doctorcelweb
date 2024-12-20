@@ -1,14 +1,15 @@
-"use client";
+// components/ui/TechServiceForm.tsx
+
+'use client';
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createTechService } from "@/services/techservice";
-import { getClients } from "@/services/clientService";
+import { getClients, getClientById } from "@/services/clientService";
 import { getWarehouses } from "@/services/warehouses";
 import { CreateTechServiceDTO } from "@/models/techservice";
 import { Status } from "@prisma/client";
 import { Button } from "@/components/ui/Button";
-import { getClientById } from "@/services/clientService";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import Link from "next/link";
-import { Client } from "@/models/client";
+import { Client } from "@prisma/client";
 import TechServiceReceipt from "../print/techservicereceipt";
 import CreateClient from "@/components/ui/createClient";
 
@@ -38,10 +39,10 @@ const TechServiceForm = () => {
   const [color, setColor] = useState("");
   const [observations, setObservations] = useState("");
   const [password, setPassword] = useState("");
-  const [clientId, setClientId] = useState<number | null>(null); // Cambiar a solo un número
+  const [clientId, setClientId] = useState<number | null>(null);
   const [warehouseId, setWarehouseId] = useState<number | null>(null);
-  const [isPrinting, setIsPrinting] = useState<boolean>(false); // Estado para saber si estamos imprimiendo
-  const [techServiceData, setTechServiceData] = useState<any | null>(null); // Estado para guardar la data del recibo
+  const [isPrinting, setIsPrinting] = useState<boolean>(false);
+  const [techServiceData, setTechServiceData] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const router = useRouter();
@@ -52,8 +53,9 @@ const TechServiceForm = () => {
 
   // Estado para manejar la búsqueda de cliente
   const [searchQuery, setSearchQuery] = useState("");
-  const [filteredClients, setFilteredClients] = useState<Client[]>([]); // Cambio a Client[] para almacenar los clientes
-  const [warehouses, setWarehouses] = useState<any[]>([]); // Estado para las bodegas
+  const [filteredClients, setFilteredClients] = useState<Client[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [warehouses, setWarehouses] = useState<any[]>([]);
   const [brandOptions, setBrandOptions] = useState<string[]>([]);
 
   // Opciones de marcas por tipo de dispositivo
@@ -87,7 +89,35 @@ const TechServiceForm = () => {
     otro: ["Generico"],
   };
 
-  // Efecto para cargar bodegas
+  // Función para obtener todos los clientes
+  const fetchClients = async () => {
+    try {
+      const fetchedClients = await getClients();
+      setClients(fetchedClients);
+    } catch (error) {
+      setErrorMessage("Hubo un error al cargar los clientes.");
+    }
+  };
+
+  // Efecto para cargar los clientes al montar
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  // Efecto para filtrar los clientes según searchQuery
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredClients([]);
+      return;
+    }
+
+    const filtered = clients.filter((client) =>
+      client.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredClients(filtered);
+  }, [searchQuery, clients]);
+
+  // Efecto para cargar bodegas y marcas cuando cambia deviceType
   useEffect(() => {
     const fetchWarehouses = async () => {
       try {
@@ -102,28 +132,6 @@ const TechServiceForm = () => {
     fetchWarehouses();
   }, [deviceType]);
 
-  // Efecto para cargar los clientes solo cuando haya una búsqueda activa
-  useEffect(() => {
-    const fetchClients = async () => {
-      if (searchQuery.trim() === "") {
-        setFilteredClients([]); // Si no hay búsqueda, no mostrar clientes
-        return;
-      }
-
-      try {
-        const fetchedClients = await getClients();
-        const filtered = fetchedClients.filter((client) =>
-          client.name.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-        setFilteredClients(filtered); // Filtrar clientes basados en la búsqueda
-      } catch (error) {
-        setErrorMessage("Hubo un error al cargar los clientes.");
-      }
-    };
-
-    fetchClients();
-  }, [searchQuery]); // Solo se ejecuta cuando searchQuery cambia
-
   // Función que se llama cuando el formulario es enviado
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -131,49 +139,65 @@ const TechServiceForm = () => {
     setErrorMessage(null);
     setSuccessMessage(null);
 
+    if (!clientId) {
+      setErrorMessage("Debe seleccionar un cliente.");
+      return;
+    }
+
+    if (!warehouseId) {
+      setErrorMessage("Debe seleccionar una bodega.");
+      return;
+    }
+
     const data: CreateTechServiceDTO = {
-      deviceType,
-      brand,
-      serialNumber,
       status,
+      deviceType,
+      serialNumber,
+      clientId,
+      warehouseId,
       deliveryDate,
+      brand,
       color,
       observations,
       password,
-      clientId: clientId ?? 1, // Se debe ajustar dinámicamente
-      warehouseId: warehouseId || 1, // Se debe ajustar dinámicamente
-      createdAt: new Date()
-        .toLocaleString("es-CO", { timeZone: "America/Bogota" })
-        .toString(),
+      createdAt: new Date().toISOString(),
     };
 
-    const newTechService = await createTechService(data);
-    setTechServiceData(newTechService);
-    if (newTechService) {
-      // Fetch client data
-      const clientData: Client = await getClientById(newTechService.clientId);
+    try {
+      const newTechService = await createTechService(data);
+      setTechServiceData(newTechService);
+      if (newTechService) {
+        // Fetch client data
+        const clientData: Client = await getClientById(newTechService.clientId);
 
-      // Combine tech service and client data
-      const combinedData = {
-        ...newTechService,
-        client: {
-          name: clientData.name,
-          email: clientData.email,
-          phone: clientData.phone,
-          address: clientData.address,
-          taxId: clientData.taxId,
-          documentType: clientData.documentType,
-          document: clientData.document,
-          personType: clientData.personType,
-          regime: clientData.regime,
-          country: clientData.country,
-          department: clientData.department,
-          city: clientData.city,
-        },
-      };
-      console.log(combinedData);
-      setTechServiceData(combinedData);
-      setIsModalOpen(true);
+        // Combine tech service and client data
+        const combinedData = {
+          ...newTechService,
+          client: {
+            name: clientData.name,
+            email: clientData.email,
+            phone: clientData.phone,
+            address: clientData.address,
+            documentType: clientData.documentType,
+            document: clientData.document,
+            personType: clientData.personType,
+            regime: clientData.regime,
+            country: clientData.country,
+            department: clientData.department,
+            city: clientData.city,
+          },
+        };
+        console.log(combinedData);
+        setTechServiceData(combinedData);
+        setIsModalOpen(true);
+      }
+    } catch (error: any) {
+      console.error("Error al crear la orden de servicio:", error);
+      setErrorMessage(
+        error instanceof Error
+          ? error.message
+          : "Error al crear la orden de servicio."
+      );
     }
   };
 
@@ -193,6 +217,20 @@ const TechServiceForm = () => {
     setFilteredClients([]); // Limpiamos los resultados de búsqueda
   };
 
+  // Función que se llama cuando se crea un nuevo cliente
+  const handleClientCreated = (newClient: Client) => {
+    // Actualizar la lista completa de clientes
+    setClients((prevClients) => [...prevClients, newClient]);
+
+    // Establecer el nuevo cliente como seleccionado
+    setClientId(newClient.id);
+    setSearchQuery(newClient.name);
+    setFilteredClients([]);
+
+    // Mostrar un mensaje de éxito
+    setSuccessMessage("Cliente creado y seleccionado exitosamente.");
+  };
+
   return (
     <>
       <div className="flex justify-around items-center bg-gray-300 dark:bg-gray-900 dark:text-gray-300 p-8">
@@ -209,7 +247,7 @@ const TechServiceForm = () => {
           <Button className="bg-blue-900 dark:bg-green-900 text-gray-100 dark:hover:bg-green-700 dark:text-white">
             <Link href={"/dashboard/techservice"}>Regresar</Link>
           </Button>
-          <CreateClient />
+          <CreateClient onClientCreated={handleClientCreated} />
         </div>
       </div>
       <div className="max-w-4xl mx-auto p-6 bg-gray-300 dark:bg-gray-900 rounded-lg shadow-lg mt-8 mb-8 dark:text-gray-200">
@@ -240,12 +278,12 @@ const TechServiceForm = () => {
                 onChange={(e) => setDeviceType(e.target.value as DeviceType)}
                 className="p-3 border border-gray-300 rounded-md bg-white shadow-sm focus:ring-2 focus:ring-gray-900 dark:bg-gray-800 dark:border-gray-700 focus:border-transparent"
               >
-                <option value="Celular">Celular</option>
-                <option value="Consola">Consola</option>
-                <option value="Control">Control</option>
-                <option value="Computador">Computador</option>
-                <option value="Parlante">Parlante</option>
-                <option value="Otro">Otro</option>
+                <option value="celular">Celular</option>
+                <option value="consola">Consola</option>
+                <option value="control">Control</option>
+                <option value="computador">Computador</option>
+                <option value="parlante">Parlante</option>
+                <option value="otro">Otro</option>
               </select>
             </div>
 
@@ -444,7 +482,6 @@ const TechServiceForm = () => {
         </Dialog>
       )}
     </>
-  );
-};
+)};
 
 export default TechServiceForm;

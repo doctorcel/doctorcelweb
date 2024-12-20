@@ -15,7 +15,6 @@ model User {
   email        String        @unique
   password     String
   role         Role
-  techServices TechService[]
 
   // Relaciones con modelos de NextAuth
   accounts Account[]
@@ -159,14 +158,14 @@ model TechService {
   brand        String?
   color        String?
   observations String?
-  password     String?
+  password     String? // Contraseña del equipo
   active       ActiveStatus @default(ENABLED)
-  client     Client    @relation(fields: [clientId], references: [id])
-  technician User?     @relation("AssignedTechServices", fields: [technicianId], references: [id])
-  warehouse  Warehouse @relation(fields: [warehouseId], references: [id])
-
-  User User[]
+  
+  client       Client       @relation(fields: [clientId], references: [id])
+  technician   User?        @relation("AssignedTechServices", fields: [technicianId], references: [id])
+  warehouse    Warehouse    @relation(fields: [warehouseId], references: [id])
 }
+
 
 enum Status {
   EN_REPARACION

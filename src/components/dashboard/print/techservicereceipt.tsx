@@ -139,7 +139,7 @@ const ElegantTechServiceReceipt: React.FC<ReceiptProps> = ({
             <p><span className="font-medium">Marca:</span> {techService.brand}</p>
             <p><span className="font-medium">Modelo:</span> {techService.color}</p>
             <p><span className="font-medium">IMEI/Serie:</span> {techService.serialNumber}</p>
-            <p><span className="font-medium">Bodega:</span> {techService.warehouseId === 1 ? "Barichara" : techService.warehouseId === 2 ? "Arrayanes" : `Desconocida (ID: ${techService.warehouseId})`}</p>
+            <p><span className="font-medium">Bodega:</span> {techService.warehouseId === 3 ? "Barichara" : techService.warehouseId === 2 ? "Arrayanes" : `Desconocida (ID: ${techService.warehouseId})`}</p>
             <p><span className="font-medium">Observaciones:</span> {techService.observations}</p>
           </div>
 
