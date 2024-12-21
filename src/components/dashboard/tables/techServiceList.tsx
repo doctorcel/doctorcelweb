@@ -117,7 +117,7 @@ const TechServiceList = () => {
             <SelectContent>
               <SelectItem value="all">Todos</SelectItem>
               <SelectItem value="3">Barichara</SelectItem>
-              <SelectItem value="2">Arrayanes</SelectItem>
+              <SelectItem value="2">Guayabal</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -175,10 +175,10 @@ const TechServiceList = () => {
                 <TableCell>{techService.brand}</TableCell>
                 <TableCell>{techService.color}</TableCell>
                 <TableCell>
-                  {techService.warehouseId === 1
+                  {techService.warehouseId === 3
                     ? "Barichara"
                     : techService.warehouseId === 2
-                    ? "Arrayanes"
+                    ? "Guayabal"
                     : techService.warehouseId}
                 </TableCell>
                 <TableCell>
@@ -203,7 +203,7 @@ const TechServiceList = () => {
                 <p><strong>IMEI/Serie:</strong> {techService.serialNumber}</p>
                 <p><strong>Marca:</strong> {techService.brand}</p>
                 <p><strong>Modelo:</strong> {techService.color}</p>
-                <p><strong>Bodega:</strong> {techService.warehouseId === 1 ? "Barichara" : techService.warehouseId === 2 ? "Arrayanes" : techService.warehouseId}</p>
+                <p><strong>Bodega:</strong> {techService.warehouseId === 3 ? "Barichara" : techService.warehouseId === 2 ? "Guayabal" : techService.warehouseId}</p>
                 <p><strong>Fecha estimada:</strong> {new Date(techService.deliveryDate).toLocaleDateString()}</p>
               </div>
             </CardContent>

@@ -108,7 +108,7 @@ const TechServiceModal: React.FC<TechServiceModalProps> = ({ techService, onClos
                    status === 'GARANTIA' ? 'Garantía' : 'Devolución'}
                 </Badge>
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-300"><strong>Bodega:</strong> {serviceDetails.warehouseId === 1 ? "Barichara" : "Arrayanes"}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300"><strong>Bodega:</strong> {serviceDetails.warehouseId === 3 ? "Barichara" : "Guayabal"}</p>
               <p className="text-sm text-gray-600 dark:text-gray-300">
                 <strong>Fecha estimada de entrega:</strong> {new Date(serviceDetails.deliveryDate).toLocaleDateString()}
               </p>
