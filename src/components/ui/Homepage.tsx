@@ -15,7 +15,7 @@ import { Article } from '@/types'
 import { motion, AnimatePresence } from "framer-motion"
 import { useRef } from "react"
 
-const CELLPHONES_CATEGORY_ID = 2;
+const CELLPHONES_CATEGORY_ID = 1;
 const ITEMS_PER_PAGE = 6;
 
 export default function Homepage() {
