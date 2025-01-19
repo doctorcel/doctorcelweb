@@ -42,7 +42,7 @@ const SubcategoryList = () => {
       <ul>
         {data.map((sub: Subcategory) => (
           <li key={sub.id}>
-            <strong>{sub.name}</strong> ({sub.active}) - Categoría: {sub.category.name}
+            <strong>{sub.name}</strong> ({sub.active})
             <button onClick={() => setEditingSubcategory(sub)}>Editar</button>
             <button onClick={() => handleDelete(sub.id)}>Eliminar</button>
           </li>

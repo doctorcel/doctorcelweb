@@ -163,7 +163,7 @@ export default function ArticleCard({ article }: ArticleCardProps) {
             <div className="flex justify-between items-center mb-2">
               <span className="text-gray-500 dark:text-gray-400">Precio:</span>
               <span className="text-green-600 dark:text-green-400 font-bold">
-                ${article.offerPrice.toLocaleString()}
+                ${article.offerPrice}
               </span>
             </div>
             <button
