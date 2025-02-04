@@ -224,6 +224,7 @@ model Client {
   department   String?
   city         String?
   active       ActiveStatus  @default(ENABLED)
+  createdAt    DateTime      @default(now())
   invoices     Invoice[]
   orders       Order[]
   techServices TechService[]

@@ -75,3 +75,4 @@ export const updateClient = async (
   });
   return handleResponse(response);
 };
+

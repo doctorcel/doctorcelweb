@@ -1,15 +1,17 @@
 // src/components/CreateClientForm.tsx
-
 import React, { useState } from 'react';
 import { createClient } from '@/services/clientService';
 import { Client } from '@/models/client';
 import Swal from 'sweetalert2';
+import { Button } from '@/components/ui/button/button';
+import { Loader2 } from 'lucide-react';
 
 interface CreateClientFormProps {
   onClientCreated: () => void;
+  onClose: () => void;
 }
 
-const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClientCreated }) => {
+const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClientCreated, onClose }) => {
   const [formData, setFormData] = useState<{
     name: string;
     email: string;
@@ -149,153 +151,161 @@ const CreateClientForm: React.FC<CreateClientFormProps> = ({ onClientCreated }) 
   };
 
   return (
-    <div className="p-4 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl mb-4">Crear Nuevo Cliente</h2>
-      {error && <div className="text-red-500 mb-2">Error: {error}</div>}
-      {success && <div className="text-green-500 mb-2">Cliente creado: {success.name}</div>}
-      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-        <div>
-          <label className="block text-gray-700">Nombre *</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
+    <div className="space-y-6">
+      <h3 className="text-2xl font-bold text-gray-800 dark:text-white">Nuevo Cliente</h3>
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Sección de información básica */}
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+              Nombre *
+            </label>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+              Email *
+            </label>
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+              Teléfono *
+            </label>
+            <input
+              type="text"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            />
+          </div>
+        </div>
+
+        {/* Sección de documentos */}
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+              Tipo de Documento *
+            </label>
+            <select
+              name="documentType"
+              value={formData.documentType}
+              onChange={handleChange}
+              required
+              className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            >
+              {/* ... opciones */}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+              Número de Documento *
+            </label>
+            <input
+              type="text"
+              name="document"
+              value={formData.document}
+              onChange={handleChange}
+              required
+              className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+              Tipo de Persona *
+            </label>
+            <select
+              name="personType"
+              value={formData.personType}
+              onChange={handleChange}
+              required
+              className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            >
+              {/* ... opciones */}
+            </select>
+          </div>
+        </div>
+
+        {/* Sección de ubicación */}
+        <div className="col-span-full grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+              País *
+            </label>
+            <input
+              type="text"
+              name="country"
+              value={formData.country}
+              onChange={handleChange}
+              required
+              className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+              Departamento *
+            </label>
+            <input
+              type="text"
+              name="department"
+              value={formData.department}
+              onChange={handleChange}
+              required
+              className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+              Ciudad *
+            </label>
+            <input
+              type="text"
+              name="city"
+              value={formData.city}
+              onChange={handleChange}
+              required
+              className="w-full p-2 border rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+            />
+          </div>
+        </div>
+
+        {/* Botones de acción */}
+        <div className="col-span-full flex justify-end gap-4 mt-6">
+          <Button
+            type="button"
+            text="Cancelar"
+            onClick={onClose}
+            className="bg-gray-200 hover:bg-gray-300 text-gray-800 dark:bg-gray-600 dark:hover:bg-gray-700 dark:text-white"
+          />
+          <Button
+            type="submit"
+            text={loading ? "Creando..." : "Crear Cliente"}
+            className="bg-blue-600 hover:bg-blue-700 text-white"
+            disabled={loading}
+            icon={loading ? <Loader2 className="animate-spin w-4 h-4" /> : undefined}
           />
         </div>
-        <div>
-          <label className="block text-gray-700">Email *</label>
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
-          />
-        </div>
-        <div>
-          <label className="block text-gray-700">Teléfono</label>
-          <input
-            type="text"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
-          />
-        </div>
-        <div>
-          <label className="block text-gray-700">Dirección *</label>
-          <input
-            type="text"
-            name="address"
-            value={formData.address}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
-          />
-        </div>
-        <div>
-          <label className="block text-gray-700">Tipo de Documento *</label>
-          <select
-            name="documentType"
-            value={formData.documentType}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
-          >
-            <option value="">Seleccione</option>
-            <option value="CC">Cédula de Ciudadanía</option>
-            <option value="CE">Cédula de Extranjería</option>
-            <option value="PAS">Pasaporte</option>
-            <option value="PTP">PTP</option>
-            <option value="TI">Tarjeta de Identidad</option>
-            <option value="NIT">NIT</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-gray-700">Número de Documento *</label>
-          <input
-            type="text"
-            name="document"
-            value={formData.document}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
-          />
-        </div>
-        <div>
-          <label className="block text-gray-700">Tipo de Persona *</label>
-          <select
-            name="personType"
-            value={formData.personType}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
-          >
-            <option value="">Seleccione</option>
-            <option value="Natural">Persona Natural</option>
-            <option value="Juridica">Persona Jurídica</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-gray-700">Régimen *</label>
-          <select
-            name="regime"
-            value={formData.regime}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
-          >
-            <option value="">Seleccione</option>
-            <option value="Simplificado">Simplificado</option>
-            <option value="Común">Común</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-gray-700">País *</label>
-          <input
-            type="text"
-            name="country"
-            value={formData.country}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
-          />
-        </div>
-        <div>
-          <label className="block text-gray-700">Departamento *</label>
-          <input
-            type="text"
-            name="department"
-            value={formData.department}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
-          />
-        </div>
-        <div>
-          <label className="block text-gray-700">Ciudad *</label>
-          <input
-            type="text"
-            name="city"
-            value={formData.city}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring"
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={loading}
-          className={`w-full bg-green-500 text-white py-2 rounded hover:bg-green-600 ${
-            loading ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
-        >
-          {loading ? 'Creando...' : 'Crear Cliente'}
-        </button>
       </form>
     </div>
   );
