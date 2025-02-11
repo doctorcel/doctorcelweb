@@ -118,6 +118,7 @@ const TechServiceList = () => {
               <SelectItem value="all">Todos</SelectItem>
               <SelectItem value="3">Barichara</SelectItem>
               <SelectItem value="2">Guayabal</SelectItem>
+              <SelectItem value="4">Bello</SelectItem>
             </SelectContent>
           </Select>
         </div>
