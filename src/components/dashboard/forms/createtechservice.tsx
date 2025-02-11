@@ -20,6 +20,7 @@ import Link from "next/link";
 import { Client } from "@prisma/client";
 import TechServiceReceipt from "../print/techservicereceipt";
 import CreateClient from "@/components/ui/createClient";
+import { create } from "lodash";
 
 type DeviceType =
   | "celular"
@@ -185,6 +186,7 @@ const TechServiceForm = () => {
             country: clientData.country,
             department: clientData.department,
             city: clientData.city,
+            createdAt: clientData.createdAt,
           },
         };
         console.log(combinedData);

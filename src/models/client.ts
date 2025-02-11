@@ -62,6 +62,7 @@ export interface Client {
   country: string;
   department: string;
   city: string;
+  createdAt: Date; // ISO date string
   active: ActiveStatus;
   invoices: Invoice[];
   orders: Order[];
